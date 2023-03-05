@@ -10,8 +10,9 @@ def run(wait_callback, callback, **kwargs):
         if (datetime.now().second == 0 and (datetime.now().minute in minutes and (hours is None or datetime.now().hour in hours))):
             print(datetime.now())
             callback()
+            sleep(1)
         else:
             print(datetime.now())
             wait_callback()
+            sleep(.5)
 
-        sleep(1)
