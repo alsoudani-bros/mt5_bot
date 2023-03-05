@@ -29,8 +29,11 @@ def call_me():
     print("it worked")
 
 
-repeater.run(minutes={9, 10, 13, 14}, callback=call_me,
-             wait_callback=print_message)
+repeater.run(
+    minutes={46, 47, 48, 49}, 
+    callback=call_me,
+    wait_callback=print_message
+)
 
 # request connection status and parameters
 # print(mt5.account_info().equity)
