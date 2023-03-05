@@ -12,11 +12,16 @@ register_matplotlib_converters()
 
 config = dotenv_values(".env")
 
-login = config.get("MT_LOGIN")
-password = config.get("MT_PASSWORD")
+# login = config.get("MT_LOGIN")
+# password = config.get("MT_PASSWORD")
+login = config.get("CHALLANGE_MT_LOGIN")
+password = config.get("CHALLANGE_MT_PASSWORD")
 
 # connect to MetaTrader 5
-if not mt5.initialize(login=int(login), server="MetaQuotes-Demo", password=password):
+# if not mt5.initialize(login=int(login), server="MetaQuotes-Demo", password=password):
+#     print("initialize() failed")
+#     mt5.shutdown()
+if not mt5.initialize(login=int(login), server="FTMO-Server", password=password):
     print("initialize() failed")
     mt5.shutdown()
 
@@ -74,18 +79,23 @@ def get_available_symbols():
     available_symbols = []
     symbols = mt5.symbols_get()
     for s in symbols:
-        print(s.name)
+        print(s.name, s.last)
         available_symbols.append(s.name)
     return available_symbols
 
 
 def get_symbol_info(symbol):
-    symbol = f"{symbol}".upper()
+    # symbol = symbol.upper()
     symbol_info = mt5.symbol_info(symbol)
     name = symbol_info.name
     spread = symbol_info.spread
-    tick_size = symbol_info.trade_tick_size
-    print(f"Name: {name}\nSpread: {spread}\nTick Size: {tick_size}\n")
+    pip_size = symbol_info.trade_tick_size * 10
+    contract_size = symbol_info.trade_contract_size
+    tick_value = symbol_info.trade_tick_value
+    print(tick_value)
+    print(
+        f"Name: {name}\nSpread: {spread}\nPip Size: {pip_size}\nContract Size: {contract_size}")
+    return name, spread, pip_size, contract_size
     # for s in symbols:
     #     print(s.name)
     #     available_symbols.append(s.name)
@@ -106,10 +116,15 @@ def check_connection():
         return status
 
 
+# long position:  money willing to lose per trade / (entry price - stop price) * contract size
+# short position:  money willing to lose per trade / (stop price - entry price) * contract size
 # get_equity()
 # get_balance()
 # get_profit()
 # get_margin_free()
 # check_connection()
 # get_available_symbols()
-get_symbol_info(eurusd)
+get_symbol_info('XAUUSD')
+get_symbol_info('US100.cash')
+get_symbol_info('EURUSD')
+get_symbol_info('AUDJPY')
