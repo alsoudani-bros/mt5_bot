@@ -1,3 +1,4 @@
+import random
 import pprint
 import pytz
 import datetime
@@ -63,6 +64,12 @@ def get_balance():
     return balance
 
 
+def get_account_name():
+    name = mt5.account_info().name
+    print(name)
+    return name
+
+
 def get_profit():
     profit = mt5.account_info().profit
     print(profit)
@@ -116,15 +123,84 @@ def check_connection():
         return status
 
 
+def send_market_order(symbol, direction, stop_loss_price, risk_reward_ratio, risk_percent):
+    market_price = mt5.symbol_info_tick(symbol).ask
+    random_id = random.randint(100000000, 999999999)
+    money_to_risk = get_balance() * risk_percent/100
+    distance_from_stop_loss = abs(market_price - stop_loss_price)
+    distance_from_take_profit = distance_from_stop_loss * risk_reward_ratio
+    if symbol == "US100.cash":
+        lot_size = money_to_risk/distance_from_stop_loss
+    elif symbol == "AUXUSD":
+        lot_size = money_to_risk/(distance_from_stop_loss * 100)
+    deviation = 100
+    request = {
+        "action": mt5.TRADE_ACTION_DEAL,
+        "symbol": symbol,
+        "volume": lot_size,
+        "sl": stop_loss_price,
+        "deviation": deviation,
+        "magic": random_id,
+        "comment": "python script open position",
+        "type_time": mt5.ORDER_TIME_GTC,
+        "type_filling": mt5.ORDER_FILLING_RETURN
+    }
+    if direction == "long":
+        request["type"] = mt5.ORDER_TYPE_BUY
+        request["tp"] = market_price + distance_from_take_profit
+    elif direction == "short":
+        request["type"] = mt5.ORDER_TYPE_SELL
+        request["tp"] = market_price - distance_from_take_profit
+
+    # send a trading request
+    result = mt5.order_send(request)
+    print(result)
+
+
+def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_reward_ratio, risk_percent):
+    random_id = random.randint(100000000, 999999999)
+    money_to_risk = get_balance() * risk_percent/100
+    distance_from_stop_loss = abs(entry_price - stop_loss_price)
+    distance_from_take_profit = distance_from_stop_loss * risk_reward_ratio
+    if symbol == "US100.cash":
+        lot_size = money_to_risk/distance_from_stop_loss
+    elif symbol == "AUXUSD":
+        lot_size = money_to_risk/(distance_from_stop_loss * 100)
+    market_buying_price = mt5.symbol_info_tick(symbol).ask
+    market_selling_price = mt5.symbol_info_tick(symbol).bid
+    deviation = 100
+    request = {
+        "action": mt5.TRADE_ACTION_PENDING,
+        "symbol": symbol,
+        "volume": lot_size,
+        "sl": stop_loss_price,
+        "price": entry_price,
+        "deviation": deviation,
+        "magic": random_id,
+        "comment": "python script open position",
+        "type_time": mt5.ORDER_TIME_GTC,
+        "type_filling": mt5.ORDER_FILLING_RETURN
+    }
+    if direction == "long" and type == "limit":
+        request["type"] = mt5.ORDER_TYPE_BUY_LIMIT
+        request["tp"] = entry_price + distance_from_take_profit
+    elif direction == "short" and type == "limit":
+        request["type"] = mt5.ORDER_TYPE_SELL_LIMIT
+        request["tp"] = entry_price - distance_from_take_profit
+    # send a trading request
+    result = mt5.order_send(request)
+    print(result)
+
+
 # long position:  money willing to lose per trade / (entry price - stop price) * contract size
 # short position:  money willing to lose per trade / (stop price - entry price) * contract size
+# get_account_name()
 # get_equity()
 # get_balance()
 # get_profit()
 # get_margin_free()
 # check_connection()
 # get_available_symbols()
-get_symbol_info('XAUUSD')
-get_symbol_info('US100.cash')
-get_symbol_info('EURUSD')
-get_symbol_info('AUDJPY')
+# get_symbol_info('US100.cash')
+# send_order(symbol, direction, type, entry_price, stop_loss_price, risk_reward_ratio, risk_percent)
+send_market_order("US100.cash", "long", 12310, 1.9, 0.1)
