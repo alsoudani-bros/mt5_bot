@@ -60,7 +60,7 @@ def get_equity():
 
 def get_balance():
     balance = mt5.account_info().balance
-    print(balance)
+    print(f"Current Balance: {balance}$")
     return balance
 
 
@@ -130,31 +130,49 @@ def send_market_order(symbol, direction, stop_loss_price, risk_reward_ratio, ris
     distance_from_stop_loss = abs(market_price - stop_loss_price)
     distance_from_take_profit = distance_from_stop_loss * risk_reward_ratio
     if symbol == "US100.cash":
-        lot_size = money_to_risk/distance_from_stop_loss
+        lot_size = round(money_to_risk/distance_from_stop_loss, 2)
     elif symbol == "AUXUSD":
-        lot_size = money_to_risk/(distance_from_stop_loss * 100)
+        lot_size = round(money_to_risk/(distance_from_stop_loss * 100), 2)
     deviation = 100
-    request = {
-        "action": mt5.TRADE_ACTION_DEAL,
-        "symbol": symbol,
-        "volume": lot_size,
-        "sl": stop_loss_price,
-        "deviation": deviation,
-        "magic": random_id,
-        "comment": "python script open position",
-        "type_time": mt5.ORDER_TIME_GTC,
-        "type_filling": mt5.ORDER_FILLING_RETURN
-    }
     if direction == "long":
-        request["type"] = mt5.ORDER_TYPE_BUY
-        request["tp"] = market_price + distance_from_take_profit
+        request = {
+            "action": mt5.TRADE_ACTION_DEAL,
+            "symbol": symbol,
+            "volume": lot_size,
+            "type": mt5.ORDER_TYPE_BUY,
+            "price": mt5.symbol_info_tick(symbol).ask,
+            "sl": stop_loss_price,
+            "tp": round(market_price + distance_from_take_profit, 2),
+            "deviation": deviation,
+            "magic": random_id,
+            "comment": "python script open position",
+            "type_time": mt5.ORDER_TIME_GTC,
+            "type_filling": mt5.ORDER_FILLING_FOK
+        }
     elif direction == "short":
-        request["type"] = mt5.ORDER_TYPE_SELL
-        request["tp"] = market_price - distance_from_take_profit
+        request = {
+            "action": mt5.TRADE_ACTION_DEAL,
+            "symbol": symbol,
+            "volume": lot_size,
+            "type": mt5.ORDER_TYPE_SELL,
+            "price": mt5.symbol_info_tick(symbol).bid,
+            "sl": stop_loss_price,
+            "tp": round(market_price - distance_from_take_profit, 2),
+            "deviation": deviation,
+            "magic": random_id,
+            "comment": "python script open position",
+            "type_time": mt5.ORDER_TIME_GTC,
+            "type_filling": mt5.ORDER_FILLING_FOK
+        }
 
     # send a trading request
     result = mt5.order_send(request)
-    print(result)
+    if result.retcode == 10009:
+        now = datetime.now()
+        print(f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {result.price}\nTime Of Excution: {now}")
+    else:
+        print(
+            f"There was an error sending the request\nThe error code: {result.retcode}\nThe request was:\n{request}\nTime Of Request: {now}")
 
 
 def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_reward_ratio, risk_percent):
@@ -163,33 +181,48 @@ def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_rewar
     distance_from_stop_loss = abs(entry_price - stop_loss_price)
     distance_from_take_profit = distance_from_stop_loss * risk_reward_ratio
     if symbol == "US100.cash":
-        lot_size = money_to_risk/distance_from_stop_loss
+        lot_size = round(money_to_risk/distance_from_stop_loss, 2)
     elif symbol == "AUXUSD":
-        lot_size = money_to_risk/(distance_from_stop_loss * 100)
-    market_buying_price = mt5.symbol_info_tick(symbol).ask
-    market_selling_price = mt5.symbol_info_tick(symbol).bid
+        lot_size = round(money_to_risk/(distance_from_stop_loss * 100), 2)
     deviation = 100
-    request = {
-        "action": mt5.TRADE_ACTION_PENDING,
-        "symbol": symbol,
-        "volume": lot_size,
-        "sl": stop_loss_price,
-        "price": entry_price,
-        "deviation": deviation,
-        "magic": random_id,
-        "comment": "python script open position",
-        "type_time": mt5.ORDER_TIME_GTC,
-        "type_filling": mt5.ORDER_FILLING_RETURN
-    }
-    if direction == "long" and type == "limit":
-        request["type"] = mt5.ORDER_TYPE_BUY_LIMIT
-        request["tp"] = entry_price + distance_from_take_profit
-    elif direction == "short" and type == "limit":
-        request["type"] = mt5.ORDER_TYPE_SELL_LIMIT
-        request["tp"] = entry_price - distance_from_take_profit
+    if direction == "long":
+        request = {
+            "action": mt5.TRADE_ACTION_PENDING,
+            "symbol": symbol,
+            "volume": lot_size,
+            "type": mt5.ORDER_TYPE_BUY_LIMIT,
+            "price": entry_price,
+            "sl": stop_loss_price,
+            "tp": round(entry_price + distance_from_take_profit, 2),
+            "deviation": deviation,
+            "magic": random_id,
+            "comment": "python script open ",
+            "type_time": mt5.ORDER_TIME_GTC,
+            "type_filling": mt5.ORDER_FILLING_FOK
+        }
+    elif direction == "short":
+        request = {
+            "action": mt5.TRADE_ACTION_PENDING,
+            "symbol": symbol,
+            "volume": lot_size,
+            "type": mt5.ORDER_TYPE_SELL_LIMIT,
+            "price": entry_price,
+            "sl": stop_loss_price,
+            "tp": round(entry_price - distance_from_take_profit, 2),
+            "deviation": deviation,
+            "magic": random_id,
+            "comment": "python script open position",
+            "type_time": mt5.ORDER_TIME_GTC,
+            "type_filling": mt5.ORDER_FILLING_FOK
+        }
     # send a trading request
     result = mt5.order_send(request)
-    print(result)
+    if result.retcode == 10009:
+        now = datetime.now()
+        print(f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {result.price}\nTime Of Excution: {now}")
+    else:
+        print(
+            f"There was an error sending the request\nThe error code: {result.retcode}\nThe request was:\n{request}\nTime Of Request: {now}")
 
 
 # long position:  money willing to lose per trade / (entry price - stop price) * contract size
@@ -203,4 +236,31 @@ def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_rewar
 # get_available_symbols()
 # get_symbol_info('US100.cash')
 # send_order(symbol, direction, type, entry_price, stop_loss_price, risk_reward_ratio, risk_percent)
-send_market_order("US100.cash", "long", 12310, 1.9, 0.1)
+# send_market_order("US100.cash", "short", 12345.00, 1.9, 0.1)
+# send_limit_order("US100.cash", "long", 12200.00, 12150.00, 1.9, 0.1)
+
+
+# symbol = "EURUSD"
+# lot = 0.1
+# point = mt5.symbol_info(symbol).point
+# price = mt5.symbol_info_tick(symbol).ask
+# deviation = 20
+# request = {
+#     "action": mt5.TRADE_ACTION_DEAL,
+#     "symbol": symbol,
+#     "volume": lot,
+#     "type": mt5.ORDER_TYPE_BUY,
+#     "price": price,
+#     "sl": price - 100 * point,
+#     "tp": price + 100 * point,
+#     "deviation": deviation,
+#     "magic": 234000,
+#     "comment": "python script open",
+#     "type_time": mt5.ORDER_TIME_GTC,
+#     "type_filling": mt5.ORDER_FILLING_FOK,
+# }
+
+# # send a trading request
+# print(request)
+# result = mt5.order_send(request)
+# print(result)
