@@ -27,66 +27,42 @@ if not mt5.initialize(login=int(login), server="FTMO-Server", password=password)
     mt5.shutdown()
 
 
-# def print_message():
-#     print("waiting still...")
-
-
-# def call_me():
-#     print("it worked")
-
-
-# repeater.run(minutes={9, 10, 13, 14}, callback=call_me,
-#              wait_callback=print_message)
-
-# request connection status and parameters
-# print(mt5.account_info().equity)
-# get data on MetaTrader 5 version
-# print(mt5.version())
-
-# set time zone to UTC
-# timezone = pytz.timezone("Etc/UTC")
-# utc_from = datetime(2020, 1, 10, tzinfo=timezone)
-# # get 10 EURUSD M15 bars starting from 01.10.2020 in UTC time zone
-# rates = mt5.copy_rates_from("EURUSD", mt5.TIMEFRAME_M15, utc_from, 10)
-
-# pprint.pprint(rates)
-
-
 def get_equity():
     equity = mt5.account_info().equity
-    print(equity)
+    print(f"Current equity is: {equity}$")
     return equity
 
 
 def get_balance():
     balance = mt5.account_info().balance
-    print(f"Current Balance: {balance}$")
+    print(f"Current Balance is: {balance}$")
     return balance
 
 
 def get_account_name():
     name = mt5.account_info().name
-    print(name)
+    print(f" The name of the current connected account is: {name}")
     return name
 
 
 def get_profit():
     profit = mt5.account_info().profit
-    print(profit)
+    print(f"Total profits are: {profit}$")
     return profit
 
 
 def get_margin_free():
     margin_free = mt5.account_info().margin_free
-    print(margin_free)
+    print(f"The available margin for trading is: {margin_free}$")
     return margin_free
 
 
 def get_available_symbols():
     available_symbols = []
     symbols = mt5.symbols_get()
+    print("The available symbols are")
     for s in symbols:
-        print(s.name, s.last)
+        print(s.name)
         available_symbols.append(s.name)
     return available_symbols
 
@@ -103,10 +79,24 @@ def get_symbol_info(symbol):
     print(
         f"Name: {name}\nSpread: {spread}\nPip Size: {pip_size}\nContract Size: {contract_size}")
     return name, spread, pip_size, contract_size
-    # for s in symbols:
-    #     print(s.name)
-    #     available_symbols.append(s.name)
-    # return available_symbols
+
+
+def get_open_positions():
+    positions_total = mt5.positions_total()
+    positions = mt5.positions_get()
+    print(f"Total open positions: {positions_total} positions")
+    for position in positions:
+        print(f"Position Ticket: {position.ticket}\nPosition time: {position.time}\nPosition magic: {position.magic}\nPosition symbol: {position.symbol}\nPosition Volume: {position.volume}\nPosition entry price: {position.price_open}\nPosition stop loss price: {position.sl}\nPosition take profit price: {position.tp}")
+    return positions
+
+
+def get_open_orders():
+    orders_total = mt5.orders_total()
+    orders = mt5.orders_get()
+    print(f"Total open orders: {orders_total} orders")
+    for order in orders:
+        print(f"Order Ticket: {order.ticket}\nOrder time: {order.time_setup}\nOrder magic: {order.magic}\nOrder symbol: {order.symbol}\nOrder Volume: {order.volume_current}\nOrder entry price: {order.price_open}\nOrder stop loss price: {order.sl}\nOrder take profit price: {order.tp}")
+    return orders
 
 
 def check_connection():
@@ -165,7 +155,6 @@ def send_market_order(symbol, direction, stop_loss_price, risk_reward_ratio, ris
             "type_filling": mt5.ORDER_FILLING_FOK
         }
 
-    # send a trading request
     result = mt5.order_send(request)
     if result.retcode == 10009:
         now = datetime.now()
@@ -215,7 +204,6 @@ def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_rewar
             "type_time": mt5.ORDER_TIME_GTC,
             "type_filling": mt5.ORDER_FILLING_FOK
         }
-    # send a trading request
     result = mt5.order_send(request)
     if result.retcode == 10009:
         now = datetime.now()
@@ -236,6 +224,10 @@ def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_rewar
 # get_available_symbols()
 # get_symbol_info('US100.cash')
 # send_order(symbol, direction, type, entry_price, stop_loss_price, risk_reward_ratio, risk_percent)
+# get_open_positions()
+# get_open_orders()
+# open_positions = mt5.positions_get()
+# print(f"Total open positions: {open_positions}")
 # send_market_order("US100.cash", "short", 12345.00, 1.9, 0.1)
 # send_limit_order("US100.cash", "long", 12200.00, 12150.00, 1.9, 0.1)
 
