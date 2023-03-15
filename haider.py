@@ -27,6 +27,47 @@ if not mt5.initialize(login=int(login), server="FTMO-Server", password=password)
     mt5.shutdown()
 
 
+def get_candles(symbol, time_frame, from_date, to_date, save_to="last_saved_candles.csv"):
+    time_frame = time_frame.strip()
+    match time_frame:
+        case "5min":
+            selected_time_frame = mt5.TIMEFRAME_M5
+        case "15min":
+            selected_time_frame = mt5.TIMEFRAME_M15
+        case "30min":
+            selected_time_frame = mt5.TIMEFRAME_M30
+        case "1hour":
+            selected_time_frame = mt5.TIMEFRAME_H1
+    dates_hash = {}
+    for index, date in enumerate(from_date.split(",")):
+        match index:
+            case 0:
+                dates_hash["from_year"] = int(date.strip())
+            case 1:
+                dates_hash["from_month"] = int(date.strip())
+            case 2:
+                dates_hash["from_day"] = int(date.strip())
+    for index, date in enumerate(to_date.split(",")):
+        match index:
+            case 0:
+                dates_hash["to_year"] = int(date.strip())
+            case 1:
+                dates_hash["to_month"] = int(date.strip())
+            case 2:
+                dates_hash["to_day"] = int(date.strip())
+    timezone = pytz.timezone("Etc/UTC")
+    utc_from = datetime(
+        dates_hash["from_year"], dates_hash["from_month"], dates_hash["from_day"], tzinfo=timezone)
+    utc_to = datetime(dates_hash["to_year"], dates_hash["to_month"],
+                      dates_hash["to_day"], tzinfo=timezone)
+    rates = mt5.copy_rates_range(symbol, selected_time_frame, utc_from, utc_to)
+    print(rates)
+    print(
+        f"The total received candles from {from_date} to {to_date} are {len(rates)}")
+    rates = pd.DataFrame(rates)
+    rates.to_csv(save_to)
+
+
 def get_equity():
     equity = mt5.account_info().equity
     print(f"Current equity is: {equity}$")
@@ -121,7 +162,7 @@ def send_market_order(symbol, direction, stop_loss_price, risk_reward_ratio, ris
     distance_from_take_profit = distance_from_stop_loss * risk_reward_ratio
     if symbol == "US100.cash":
         lot_size = round(money_to_risk/distance_from_stop_loss, 2)
-    elif symbol == "AUXUSD":
+    elif symbol == "XAUUSD":
         lot_size = round(money_to_risk/(distance_from_stop_loss * 100), 2)
     deviation = 100
     if direction == "long":
@@ -171,7 +212,7 @@ def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_rewar
     distance_from_take_profit = distance_from_stop_loss * risk_reward_ratio
     if symbol == "US100.cash":
         lot_size = round(money_to_risk/distance_from_stop_loss, 2)
-    elif symbol == "AUXUSD":
+    elif symbol == "XAUUSD":
         lot_size = round(money_to_risk/(distance_from_stop_loss * 100), 2)
     deviation = 100
     if direction == "long":
@@ -230,6 +271,8 @@ def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_rewar
 # print(f"Total open positions: {open_positions}")
 # send_market_order("US100.cash", "short", 12345.00, 1.9, 0.1)
 # send_limit_order("US100.cash", "long", 12200.00, 12150.00, 1.9, 0.1)
+get_candles("US100.cash", "15min", "2022,1,1", "2023,1,1",
+            "2022_2023_15min_us100.csv")
 
 
 # symbol = "EURUSD"
