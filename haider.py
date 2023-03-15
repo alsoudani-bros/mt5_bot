@@ -61,7 +61,6 @@ def get_candles(symbol, time_frame, from_date, to_date, save_to="last_saved_cand
     utc_to = datetime(dates_hash["to_year"], dates_hash["to_month"],
                       dates_hash["to_day"], tzinfo=timezone)
     rates = mt5.copy_rates_range(symbol, selected_time_frame, utc_from, utc_to)
-    print(rates)
     print(
         f"The total received candles from {from_date} to {to_date} are {len(rates)}")
     rates = pd.DataFrame(rates)
