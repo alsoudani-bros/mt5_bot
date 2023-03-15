@@ -272,8 +272,7 @@ def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_rewar
 # print(f"Total open positions: {open_positions}")
 # send_market_order("US100.cash", "short", 12345.00, 1.9, 0.1)
 # send_limit_order("US100.cash", "long", 12200.00, 12150.00, 1.9, 0.1)
-get_candles("US100.cash", "15min", "2022,1,1", "2023,1,1",
-            "2022_2023_15min_us100.csv")
+# get_candles("GBPJPY", "1hour", "2020,1,1", "2023,1,1","2020_2023_1hour_GBPJPY.csv")
 
 
 # symbol = "EURUSD"
