@@ -66,6 +66,7 @@ def get_candles(symbol, time_frame, from_date, to_date, save_to="last_saved_cand
         f"The total received candles from {from_date} to {to_date} are {len(rates)}")
     rates = pd.DataFrame(rates)
     rates.to_csv(save_to)
+    return rates
 
 
 def get_equity():
