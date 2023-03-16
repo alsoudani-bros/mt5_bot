@@ -9,25 +9,98 @@ import pandas as pd
 from dotenv import dotenv_values
 import repeater
 from pandas.plotting import register_matplotlib_converters
+from scipy.signal import argrelextrema
+import numpy as np
 register_matplotlib_converters()
 
 config = dotenv_values(".env")
 
-# login = config.get("MT_LOGIN")
-# password = config.get("MT_PASSWORD")
 login = config.get("CHALLANGE_MT_LOGIN")
 password = config.get("CHALLANGE_MT_PASSWORD")
 
-# connect to MetaTrader 5
-# if not mt5.initialize(login=int(login), server="MetaQuotes-Demo", password=password):
-#     print("initialize() failed")
-#     mt5.shutdown()
-if not mt5.initialize(login=int(login), server="FTMO-Server", password=password):
-    print("initialize() failed")
+
+def establish_MT5_connection(login, password):
+    if not mt5.initialize(login=int(login), server="FTMO-Server", password=password):
+        print("Connection failed............")
+        mt5.shutdown()
+    else:
+        print("Successfully connected.........")
+
+
+establish_MT5_connection(login, password)
+
+
+def sutdown_MT5_connection():
     mt5.shutdown()
+    print(f"You are now disconnected.......")
 
 
-def get_candles(symbol, time_frame, from_date, to_date, save_to="last_saved_candles.csv"):
+def within_the_period(period_start_hour, period_start_minute, period_end_hour, period_end_minute):
+    now = datetime.now()
+    start_time = now.replace(
+        hour=period_start_hour, minute=period_start_minute)
+    end_time = now.replace(hour=period_end_hour,
+                           minute=period_end_minute)
+    current_time = now.strftime("%H:%M:%S")
+    print(current_time)
+    if now >= start_time and now <= end_time:
+        print("within the period")
+        return True
+    else:
+        print("not within the period")
+        return False
+
+
+def get_recent_pivot_high(symbol, time_frame, candles_count, candles_count_on_each_side):
+    candles = get_candles_by_count(symbol, time_frame, candles_count)
+    ticks_frame = pd.DataFrame(candles)
+    ticks_frame['max'] = ticks_frame.iloc[argrelextrema(
+        ticks_frame['close'].values, np.greater, order=candles_count_on_each_side)[0]]['close']
+    candles_start_range = candles_count - candles_count_on_each_side - 1
+    candles_end_range = candles_count_on_each_side
+
+    for candle_index_under_evaluation in range(candles_start_range, candles_end_range, -1):
+        if ticks_frame['max'][candle_index_under_evaluation] > 0:
+            print(
+                f"The most recent pivot high is {ticks_frame['max'][candle_index_under_evaluation]}")
+            return ticks_frame['max'][candle_index_under_evaluation]
+
+
+def get_recent_pivot_low(symbol, time_frame, candles_count, candles_count_on_each_side):
+    candles = get_candles_by_count(symbol, time_frame, candles_count)
+    ticks_frame = pd.DataFrame(candles)
+    ticks_frame['min'] = ticks_frame.iloc[argrelextrema(
+        ticks_frame['close'].values, np.less, order=candles_count_on_each_side)[0]]['close']
+    candles_start_range = candles_count - candles_count_on_each_side - 1
+    candles_end_range = candles_count_on_each_side
+
+    for candle_index_under_evaluation in range(candles_start_range, candles_end_range, -1):
+        if ticks_frame['min'][candle_index_under_evaluation] > 0:
+            print(
+                f"The most recent pivot low is {ticks_frame['min'][candle_index_under_evaluation]}")
+            return ticks_frame['min'][candle_index_under_evaluation]
+
+
+def get_candles_by_count(symbol, time_frame, candles_count):
+    time_frame = time_frame.strip()
+    match time_frame:
+        case "5min":
+            selected_time_frame = mt5.TIMEFRAME_M5
+        case "15min":
+            selected_time_frame = mt5.TIMEFRAME_M15
+        case "30min":
+            selected_time_frame = mt5.TIMEFRAME_M30
+        case "1hour":
+            selected_time_frame = mt5.TIMEFRAME_H1
+    rates = mt5.copy_rates_from_pos(
+        symbol, selected_time_frame, 1, candles_count)
+    print(
+        f"The last {len(rates)} candles received for the symbol {symbol} in the {time_frame} time frame:")
+    print(rates)
+    return rates
+
+
+def get_candles_by_date(symbol, time_frame, from_date, to_date, save_to="last_saved_candles.csv"):
     time_frame = time_frame.strip()
     match time_frame:
         case "5min":
@@ -64,6 +137,7 @@ def get_candles(symbol, time_frame, from_date, to_date, save_to="last_saved_cand
     print(
         f"The total received candles from {from_date} to {to_date} are {len(rates)}")
     rates = pd.DataFrame(rates)
+    rates["time"] = pd.to_datetime(rates["time"], unit="s")
     rates.to_csv(save_to)
     return rates
 
@@ -271,8 +345,11 @@ def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_rewar
 # print(f"Total open positions: {open_positions}")
 # send_market_order("US100.cash", "short", 12345.00, 1.9, 0.1)
 # send_limit_order("US100.cash", "long", 12200.00, 12150.00, 1.9, 0.1)
-# get_candles("GBPJPY", "1hour", "2020,1,1", "2023,1,1","2020_2023_1hour_GBPJPY.csv")
-
+# get_candles_by_date("US100.cash", "15min", "2022,1,1", "2023,1,1", "2022_2023_15min_us100.csv")
+# get_candles_by_count("EURUSD", "15min", 5)
+# get_recent_pivot_high("US100.cash", "15min", 20, 2)
+# get_recent_pivot_low("US100.cash", "15min", 20, 2)
+# within_the_period(5, 30, 13, 32)
 
 # symbol = "EURUSD"
 # lot = 0.1
