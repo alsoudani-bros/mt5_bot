@@ -104,6 +104,6 @@ handlers.run(
                           risk_reward_ratio=1.9,
                           starting_balance_for_the_day=100908,
                           max_percent_drop_for_the_day=4,
-                          trading_start_hour=5,
+                          trading_start_hour=16,
                           trading_end_hour=14),
     wait_callback=still_alive)
