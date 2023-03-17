@@ -12,6 +12,8 @@ from pandas.plotting import register_matplotlib_converters
 from scipy.signal import argrelextrema
 import numpy as np
 from time import sleep
+import winsound
+from threading import Thread
 register_matplotlib_converters()
 
 config = dotenv_values(".env")
@@ -31,7 +33,7 @@ def establish_MT5_connection(login, password):
 # establish_MT5_connection(login, password)
 
 
-def sutdown_MT5_connection():
+def shutdown_MT5_connection():
     mt5.shutdown()
     print(f"You are now disconnected.......")
 
@@ -41,7 +43,7 @@ def run(wait_callback, callback, **kwargs):
     hours = kwargs.get("hours")
 
     while True:
-        if (datetime.now().second == 15 and (datetime.now().minute in minutes and (hours is None or datetime.now().hour in hours))):
+        if (datetime.now().second == 10 and (datetime.now().minute in minutes and (hours is None or datetime.now().hour in hours))):
             print(datetime.now())
             callback()
             sleep(1)
@@ -221,13 +223,48 @@ def get_open_positions():
     return positions
 
 
+def close_open_position(symbol, ticket_number):
+    result = mt5.Close(symbol, ticket=ticket_number)
+    if result:
+        ring('SystemAsterisk')
+        print(
+            f"Successfully closed the position with ticket number: {ticket_number} on the symbol: {symbol}")
+    else:
+        ring('SystemHand')
+        print(
+            f"Failed to close the position with ticket number: {ticket_number} on the symbol: {symbol}")
+
+
 def get_open_orders():
     orders_total = mt5.orders_total()
     orders = mt5.orders_get()
+    print(orders)
     print(f"Total open orders: {orders_total} orders")
     for order in orders:
-        print(f"Order Ticket: {order.ticket}\nOrder time: {order.time_setup}\nOrder magic: {order.magic}\nOrder symbol: {order.symbol}\nOrder Volume: {order.volume_current}\nOrder entry price: {order.price_open}\nOrder stop loss price: {order.sl}\nOrder take profit price: {order.tp}")
+        if order.type == 2:
+            print(f"Order Ticket: {order.ticket}\nOrder time: {order.time_setup}\nOrder magic: {order.magic}\nOrder symbol: {order.symbol}\nDirection: Long\nOrder Volume: {order.volume_current}\nOrder entry price: {order.price_open}\nOrder stop loss price: {order.sl}\nOrder take profit price: {order.tp}")
+        elif order.type == 3:
+            print(f"Order Ticket: {order.ticket}\nOrder time: {order.time_setup}\nOrder magic: {order.magic}\nOrder symbol: {order.symbol}\nDirection: Short\nOrder Volume: {order.volume_current}\nOrder entry price: {order.price_open}\nOrder stop loss price: {order.sl}\nOrder take profit price: {order.tp}")
+        else:
+            print(f"Order Ticket: {order.ticket}\nOrder time: {order.time_setup}\nOrder magic: {order.magic}\nOrder symbol: {order.symbol}\nDirection: not coded yet\nOrder Volume: {order.volume_current}\nOrder entry price: {order.price_open}\nOrder stop loss price: {order.sl}\nOrder take profit price: {order.tp}")
     return orders
+
+
+def close_open_order(ticket_number):
+    request = {
+        "action": mt5.TRADE_ACTION_REMOVE,
+        "order": ticket_number
+    }
+    result = mt5.order_send(request)
+    now = datetime.now()
+    if result.retcode == 10009:
+        ring('SystemAsterisk')
+        print(f"{result.comment}\nPending Order number: {result.order} got removed \nTime Of Excution: {now}")
+
+    else:
+        ring('SystemHand')
+        print(
+            f"There was an error sending the request\nThe error code: {result.retcode}\nThe request was:\n{request}\nTime Of Request: {now}")
 
 
 def check_connection():
@@ -240,6 +277,7 @@ def check_connection():
             f'You have established connection with the Metatrader5 terminal \nThe Ping is {round(internet_connection)} ms \nThe total available symbols for trading are {number_of_available_symbols}')
         return status, internet_connection
     else:
+        ring('SystemHand')
         print("No connection with the Metatrader5 terminal")
         return status
 
@@ -289,8 +327,10 @@ def send_market_order(symbol, direction, stop_loss_price, risk_reward_ratio, ris
     result = mt5.order_send(request)
     now = datetime.now()
     if result.retcode == 10009:
+        ring('SystemAsterisk')
         print(f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {result.price}\nTime Of Excution: {now}")
     else:
+        ring('SystemHand')
         print(
             f"There was an error sending the request\nThe error code: {result.retcode}\nThe request was:\n{request}\nTime Of Request: {now}")
 
@@ -338,11 +378,25 @@ def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_rewar
     result = mt5.order_send(request)
     now = datetime.now()
     if result.retcode == 10009:
+        ring('SystemAsterisk')
         print(f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {result.price}\nTime Of Excution: {now}")
     else:
+        ring('SystemHand')
         print(
             f"There was an error sending the request\nThe error code: {result.retcode}\nThe request was:\n{request}\nTime Of Request: {now}")
 
+
+def ring(track_name):
+    soundProcess = Thread(target=winsound.PlaySound, args=[
+        track_name, winsound.SND_ALIAS])
+    soundProcess.start()
+
+
+# ring('SystemAsterisk')
+# ring('SystemExclamation')
+# ring('SystemExit')
+# ring('SystemHand')
+# ring('SystemQuestion')
 
 # def wait_func():
 #     print("Waiting for hope...")
@@ -368,13 +422,15 @@ def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_rewar
 # get_symbol_info('US100.cash')
 # send_order(symbol, direction, type, entry_price, stop_loss_price, risk_reward_ratio, risk_percent)
 # get_open_positions()
+# close_open_position("XAUUSD", 50390019819)
 # get_open_orders()
+# close_open_order(50389969290)
 # open_positions = mt5.positions_get()
 # print(f"Total open positions: {open_positions}")
 # send_market_order("XAUUSD", "long", 1919.00, 1.9, 0.1)
 # send_limit_order("US100.cash", "long", 12200.00, 12150.00, 1.9, 0.1)
 # get_candles_by_date("US100.cash", "15min", "2022,1,1", "2023,1,1", "2022_2023_15min_us100.csv")
-# get_candles_by_count("EURUSD", "15min", 5)
+# get_candles_by_count("XAUUSD", "15min", 1)
 # get_recent_pivot_high("US100.cash", "15min", 20, 2)
 # get_recent_pivot_low("US100.cash", "15min", 20, 2)
 # within_the_period(5, 30, 13, 32)
