@@ -11,28 +11,44 @@ import repeater
 from pandas.plotting import register_matplotlib_converters
 from scipy.signal import argrelextrema
 import numpy as np
+from time import sleep
 register_matplotlib_converters()
 
 config = dotenv_values(".env")
 
-login = config.get("CHALLANGE_MT_LOGIN")
-password = config.get("CHALLANGE_MT_PASSWORD")
+login = config.get("MT_LOGIN")
+password = config.get("MT_PASSWORD")
 
 
 def establish_MT5_connection(login, password):
-    if not mt5.initialize(login=int(login), server="FTMO-Server", password=password):
+    if not mt5.initialize(login=int(login), server="MetaQuotes-Demo", password=password):
         print("Connection failed............")
         mt5.shutdown()
     else:
         print("Successfully connected.........")
 
 
-establish_MT5_connection(login, password)
+# establish_MT5_connection(login, password)
 
 
 def sutdown_MT5_connection():
     mt5.shutdown()
     print(f"You are now disconnected.......")
+
+
+def run(wait_callback, callback, **kwargs):
+    minutes = kwargs.get("minutes", {0})
+    hours = kwargs.get("hours")
+
+    while True:
+        if (datetime.now().second == 15 and (datetime.now().minute in minutes and (hours is None or datetime.now().hour in hours))):
+            print(datetime.now())
+            callback()
+            sleep(1)
+        else:
+            # print(datetime.now())
+            wait_callback()
+            sleep(.5)
 
 
 def within_the_period(period_start_hour, period_start_minute, period_end_hour, period_end_minute):
@@ -94,9 +110,9 @@ def get_candles_by_count(symbol, time_frame, candles_count):
             selected_time_frame = mt5.TIMEFRAME_H1
     rates = mt5.copy_rates_from_pos(
         symbol, selected_time_frame, 1, candles_count)
-    print(
-        f"The last {len(rates)} candles received for the symbol {symbol} in the {time_frame} time frame:")
-    print(rates)
+    # print(
+    #     f"The last {len(rates)} candles received for the symbol {symbol} in the {time_frame} time frame:")
+    # print(rates)
     return rates
 
 
@@ -134,8 +150,8 @@ def get_candles_by_date(symbol, time_frame, from_date, to_date, save_to="last_sa
     utc_to = datetime(dates_hash["to_year"], dates_hash["to_month"],
                       dates_hash["to_day"], tzinfo=timezone)
     rates = mt5.copy_rates_range(symbol, selected_time_frame, utc_from, utc_to)
-    print(
-        f"The total received candles from {from_date} to {to_date} are {len(rates)}")
+    # print(
+    #     f"The total received candles from {from_date} to {to_date} are {len(rates)}")
     rates = pd.DataFrame(rates)
     rates["time"] = pd.to_datetime(rates["time"], unit="s")
     rates.to_csv(save_to)
@@ -271,8 +287,8 @@ def send_market_order(symbol, direction, stop_loss_price, risk_reward_ratio, ris
         }
 
     result = mt5.order_send(request)
+    now = datetime.now()
     if result.retcode == 10009:
-        now = datetime.now()
         print(f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {result.price}\nTime Of Excution: {now}")
     else:
         print(
@@ -320,14 +336,26 @@ def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_rewar
             "type_filling": mt5.ORDER_FILLING_FOK
         }
     result = mt5.order_send(request)
+    now = datetime.now()
     if result.retcode == 10009:
-        now = datetime.now()
         print(f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {result.price}\nTime Of Excution: {now}")
     else:
         print(
             f"There was an error sending the request\nThe error code: {result.retcode}\nThe request was:\n{request}\nTime Of Request: {now}")
 
 
+# def wait_func():
+#     print("Waiting for hope...")
+
+
+# def the_main_func():
+#     print("The main function")
+
+
+# repeater.run(
+#     minutes={15, 30, 45, 0},
+#     callback=the_main_func,
+#     wait_callback=wait_func)
 # long position:  money willing to lose per trade / (entry price - stop price) * contract size
 # short position:  money willing to lose per trade / (stop price - entry price) * contract size
 # get_account_name()
@@ -343,7 +371,7 @@ def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_rewar
 # get_open_orders()
 # open_positions = mt5.positions_get()
 # print(f"Total open positions: {open_positions}")
-# send_market_order("US100.cash", "short", 12345.00, 1.9, 0.1)
+# send_market_order("XAUUSD", "long", 1919.00, 1.9, 0.1)
 # send_limit_order("US100.cash", "long", 12200.00, 12150.00, 1.9, 0.1)
 # get_candles_by_date("US100.cash", "15min", "2022,1,1", "2023,1,1", "2022_2023_15min_us100.csv")
 # get_candles_by_count("EURUSD", "15min", 5)
