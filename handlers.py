@@ -18,12 +18,14 @@ register_matplotlib_converters()
 
 config = dotenv_values(".env")
 
-login = config.get("MT_LOGIN")
-password = config.get("MT_PASSWORD")
+login = config.get("CHALLANGE_MT_LOGIN")
+password = config.get("CHALLANGE_MT_PASSWORD")
+# server="MetaQuotes-Demo"
+# server="FTMO-Server"
 
 
 def establish_MT5_connection(login, password):
-    if not mt5.initialize(login=int(login), server="MetaQuotes-Demo", password=password):
+    if not mt5.initialize(login=int(login), server="FTMO-Server", password=password):
         print("Connection failed............")
         mt5.shutdown()
     else:
@@ -429,7 +431,8 @@ def ring(track_name):
 # print(f"Total open positions: {open_positions}")
 # send_market_order("XAUUSD", "long", 1919.00, 1.9, 0.1)
 # send_limit_order("US100.cash", "long", 12200.00, 12150.00, 1.9, 0.1)
-# get_candles_by_date("US100.cash", "15min", "2022,1,1", "2023,1,1", "2022_2023_15min_us100.csv")
+# get_candles_by_date("US100.cash", "15min", "2022,1,1",
+    # "2023,1,1", r"candles_data\us100\2022_2023_15min_us100.csv")
 # get_candles_by_count("XAUUSD", "15min", 1)
 # get_recent_pivot_high("US100.cash", "15min", 20, 2)
 # get_recent_pivot_low("US100.cash", "15min", 20, 2)

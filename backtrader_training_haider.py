@@ -19,8 +19,8 @@ if __name__ == '__main__':
     data = bt.feeds.GenericCSVData(
         dataname=r"candles_data\us100\2022_2023_15min_us100.csv",
 
-        fromdate=datetime.datetime(2000, 1, 1),
-        todate=datetime.datetime(2000, 12, 31),
+        fromdate=datetime.datetime(2022, 1, 3),
+        todate=datetime.datetime(2022, 12, 30),
 
         nullvalue=0.0,
 
