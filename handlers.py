@@ -18,21 +18,23 @@ register_matplotlib_converters()
 
 config = dotenv_values(".env")
 
-login = config.get("CHALLANGE_MT_LOGIN")
-password = config.get("CHALLANGE_MT_PASSWORD")
-# server="MetaQuotes-Demo"
+# login = config.get("CHALLANGE_MT_LOGIN")
+# password = config.get("CHALLANGE_MT_PASSWORD")
 # server="FTMO-Server"
+login = config.get("MT_LOGIN")
+password = config.get("MT_PASSWORD")
+server = "MetaQuotes-Demo"
 
 
-def establish_MT5_connection(login, password):
-    if not mt5.initialize(login=int(login), server="FTMO-Server", password=password):
+def establish_MT5_connection(login, server, password):
+    if not mt5.initialize(login=int(login), server=server, password=password):
         print("Connection failed............")
         mt5.shutdown()
     else:
         print("Successfully connected.........")
 
 
-# establish_MT5_connection(login, password)
+# establish_MT5_connection(login, server, password)
 
 
 def shutdown_MT5_connection():
@@ -45,14 +47,19 @@ def run(wait_callback, callback, **kwargs):
     hours = kwargs.get("hours")
 
     while True:
-        if (datetime.now().second == 10 and (datetime.now().minute in minutes and (hours is None or datetime.now().hour in hours))):
-            print(datetime.now())
-            callback()
+        try:
+            if (datetime.now().second == 10 and (datetime.now().minute in minutes and (hours is None or datetime.now().hour in hours))):
+                print(datetime.now())
+                callback()
+                sleep(1)
+            else:
+                # print(datetime.now())
+                wait_callback()
+                sleep(.5)
+        except Exception as e:
+            print(f"some issue in the process happened at {datetime.now()}")
+            logger.error('Failed market checking ' + str(e))
             sleep(1)
-        else:
-            # print(datetime.now())
-            wait_callback()
-            sleep(.5)
 
 
 def within_the_period(period_start_hour, period_start_minute, period_end_hour, period_end_minute):
@@ -64,10 +71,10 @@ def within_the_period(period_start_hour, period_start_minute, period_end_hour, p
     current_time = now.strftime("%H:%M:%S")
     print(current_time)
     if now >= start_time and now <= end_time:
-        print("within the period")
+        print("within the Break period")
         return True
     else:
-        print("not within the period")
+        print("not within the break period")
         return False
 
 
@@ -432,11 +439,11 @@ def ring(track_name):
 # send_market_order("XAUUSD", "long", 1919.00, 1.9, 0.1)
 # send_limit_order("US100.cash", "long", 12200.00, 12150.00, 1.9, 0.1)
 # get_candles_by_date("US100.cash", "15min", "2022,1,1",
-    # "2023,1,1", r"candles_data\us100\2022_2023_15min_us100.csv")
+#                     "2023,1,1", r"candles_data\us100\2022_2023_15min_us100.csv")
 # get_candles_by_count("XAUUSD", "15min", 1)
 # get_recent_pivot_high("US100.cash", "15min", 20, 2)
 # get_recent_pivot_low("US100.cash", "15min", 20, 2)
-# within_the_period(5, 30, 13, 32)
+# within_the_period(5, 0, 13, 0)
 
 # symbol = "EURUSD"
 # lot = 0.1

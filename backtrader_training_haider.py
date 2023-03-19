@@ -10,22 +10,17 @@ if __name__ == '__main__':
     # Create a cerebro entity
     cerebro = bt.Cerebro()
 
-    # Datas are in a subfolder of the samples. Need to find where the script is
-    # because it could have been called from anywhere
-    modpath = os.path.dirname(os.path.abspath(sys.argv[0]))
-    datapath = os.path.join(modpath, 'historical_data1.csv')
-
     # Create a Data Feed
     data = bt.feeds.GenericCSVData(
-        dataname=r"candles_data\us100\2022_2023_15min_us100.csv",
+        dataname=r"candles_data\us100\test.csv",
 
         fromdate=datetime.datetime(2022, 1, 3),
         todate=datetime.datetime(2022, 12, 30),
 
         nullvalue=0.0,
 
-        dtformat=('%Y-%m-%d'),
-        tmformat=('%H:%M:%S'),
+        dtformat=('%Y-%m-%d %H:%M'),
+        tmformat=('%H:%M'),
 
         datetime=0,
         time=1,
@@ -34,7 +29,7 @@ if __name__ == '__main__':
         open=4,
         close=5,
         volume=6,
-        openinterest=-1
+        # openinterest=-1
     )
 
     # Add the Data Feed to Cerebro
