@@ -58,7 +58,7 @@ def run(wait_callback, callback, **kwargs):
                 sleep(.5)
         except Exception as e:
             print(f"some issue in the process happened at {datetime.now()}")
-            logger.error('Failed market checking ' + str(e))
+            print('Failed market checking ' + str(e))
             sleep(1)
 
 
