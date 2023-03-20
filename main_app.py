@@ -47,8 +47,8 @@ def check_market(symbol, time_frame, first_risk_percent, second_risk_percent, ri
     last_candle = handlers.get_candles_by_count(symbol, time_frame, 1)[0]
     last_candle_open = last_candle[1]
     last_candle_close = last_candle[4]
-    if account_change_percent > - max_percent_drop_for_the_day/100:
-        if not handlers.within_the_period(break_start_hour, 0, break_end_hour, 0):
+    if not handlers.within_the_period(break_start_hour, 0, break_end_hour, 0):
+        if account_change_percent > - max_percent_drop_for_the_day/100:
             if last_candle_close > recent_pivot_high and last_candle_open <= recent_pivot_high:
                 if last_long_position_pivot_high == recent_pivot_high:
                     handlers.ring('SystemHand')
@@ -78,13 +78,14 @@ def check_market(symbol, time_frame, first_risk_percent, second_risk_percent, ri
             else:
                 print("no conditions met and no position taken")
         else:
-            print("The Break time now no trading.......")
-    else:
-        print(
-            f"The today's account profit percent is {account_change_percent} which is below the {-max_percent_drop_for_the_day/100} limit")
+            print(
+                f"The today's account profit percent is {account_change_percent} which is below the {-max_percent_drop_for_the_day/100} limit")
 
-    manage_pending_orders(symbol, recent_pivot_high, recent_pivot_low)
-    handlers.get_open_positions()
+        manage_pending_orders(symbol, recent_pivot_high, recent_pivot_low)
+
+        handlers.get_open_positions()
+    else:
+        print("The Break time now no trading.......")
 
 
 def manage_pending_orders(symbol, recent_pivot_high, recent_pivot_low):
