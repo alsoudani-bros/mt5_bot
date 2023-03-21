@@ -78,6 +78,21 @@ def break_period(period_start_hour, period_start_minute, period_end_hour, period
         return False
 
 
+def news_release(symbol, month, day, hour, minute, news_type):
+    now = datetime.now()
+    news_release_time = now.replace(
+        month=month, day=day, hour=hour, minute=minute)
+    before_news_release = news_release_time - datetime.timedelta(minutes=5)
+    after_news_release = news_release_time + datetime.timedelta(minutes=5)
+    if now >= before_news_release and now <= after_news_release:
+        print(f"avoid new release time for {symbol}")
+        return True
+    else:
+        print(
+            f"the remaining time for the {news_type} on the symbol: {symbol} is {before_news_release - now}")
+        return False
+
+
 def get_recent_pivot_high(symbol, time_frame, candles_count, candles_count_on_each_side):
     candles = get_candles_by_count(symbol, time_frame, candles_count)
     ticks_frame = pd.DataFrame(candles)
@@ -301,6 +316,12 @@ def send_market_order(symbol, direction, stop_loss_price, risk_reward_ratio, ris
         lot_size = round(money_to_risk/distance_from_stop_loss, 2)
     elif symbol == "XAUUSD":
         lot_size = round(money_to_risk/(distance_from_stop_loss * 100), 2)
+    elif symbol == "GBPJPY":
+        lot_size = round(money_to_risk * 0.132 /
+                         (distance_from_stop_loss * 100), 2)
+    elif symbol == "EURUSD":
+        lot_size = round(money_to_risk * 0.1 /
+                         (distance_from_stop_loss * 10000), 2)
     deviation = 100
     if direction == "long":
         request = {
