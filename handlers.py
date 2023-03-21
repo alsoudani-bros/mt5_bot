@@ -62,7 +62,7 @@ def run(wait_callback, callback, **kwargs):
             sleep(1)
 
 
-def within_the_period(period_start_hour, period_start_minute, period_end_hour, period_end_minute):
+def break_period(period_start_hour, period_start_minute, period_end_hour, period_end_minute):
     now = datetime.now()
     start_time = now.replace(
         hour=period_start_hour, minute=period_start_minute)
@@ -71,10 +71,10 @@ def within_the_period(period_start_hour, period_start_minute, period_end_hour, p
     current_time = now.strftime("%H:%M:%S")
     print(current_time)
     if now >= start_time and now <= end_time:
-        print("within the Break period")
+        print("Break period")
         return True
     else:
-        print("not within the break period")
+        print("Not a break period")
         return False
 
 

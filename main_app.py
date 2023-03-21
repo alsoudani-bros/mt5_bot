@@ -47,7 +47,7 @@ def check_market(symbol, time_frame, first_risk_percent, second_risk_percent, ri
     last_candle = handlers.get_candles_by_count(symbol, time_frame, 1)[0]
     last_candle_open = last_candle[1]
     last_candle_close = last_candle[4]
-    if not handlers.within_the_period(break_start_hour, 0, break_end_hour, 0):
+    if not handlers.break_period(break_start_hour, 0, break_end_hour, 0):
         if account_change_percent > - max_percent_drop_for_the_day/100:
             if last_candle_close > recent_pivot_high and last_candle_open <= recent_pivot_high:
                 if last_long_position_pivot_high == recent_pivot_high:
