@@ -16,13 +16,13 @@ from threading import Thread
 register_matplotlib_converters()
 config = dotenv_values(".env")
 
-login = config.get("MT_LOGIN")
-password = config.get("MT_PASSWORD")
-server = "MetaQuotes-Demo"
+# login = config.get("MT_LOGIN")
+# password = config.get("MT_PASSWORD")
+# server = "MetaQuotes-Demo"
 
-# login = config.get("CHALLANGE_MT_LOGIN")
-# password = config.get("CHALLANGE_MT_PASSWORD")
-# server="FTMO-Server"
+login = config.get("CHALLANGE_MT_LOGIN")
+password = config.get("CHALLANGE_MT_PASSWORD")
+server="FTMO-Server"
 
 handlers.establish_MT5_connection(
     login, server, password)
@@ -31,14 +31,14 @@ last_long_position_pivot_high = 0
 last_short_position_pivot_low = 0
 
 
-def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_percent, stages_cut_profit_percent, risk_reward_ratio, starting_balance_for_the_week, max_percent_drop_for_the_day, break_start_hour, break_end_hour):
+def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_percent, stages_cut_profit_percent, risk_reward_ratio, starting_balance_for_the_week, max_percent_drop_for_the_day, break_start_hour, break_start_minute, break_end_hour, break_end_minute):
 
     global last_short_position_pivot_low
     global last_long_position_pivot_high
 
     current_balance = handlers.get_balance()
     net_profit = current_balance - starting_balance_for_the_week
-    account_change_percent = net_profit/starting_balance_for_the_week
+    account_change_percent = round(net_profit/starting_balance_for_the_week, 2)
 
     if account_change_percent < stages_cut_profit_percent:
         risk_percent = stage_one_risk_percent
@@ -55,7 +55,7 @@ def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_perc
     last_candle_open = last_candle[1]
     last_candle_close = last_candle[4]
 
-    if not handlers.break_period(break_start_hour, 0, break_end_hour, 0):
+    if not handlers.break_period(break_start_hour, break_start_minute, break_end_hour, break_end_minute):
         if account_change_percent > - max_percent_drop_for_the_day/100:
             if last_candle_close > recent_pivot_high and last_candle_open <= recent_pivot_high:
                 if last_long_position_pivot_high == recent_pivot_high:
@@ -116,16 +116,18 @@ def still_alive():
 
 
 def check_market_callback():
-    check_market(symbol="XAUUSD",
+    check_market(symbol="US100.cash",
                  time_frame="15min",
                  stage_one_risk_percent=0.25,
                  stage_two_risk_percent=0.5,
                  stages_cut_profit_percent=2.5,
                  risk_reward_ratio=1.9,
-                 starting_balance_for_the_week=100908,
+                 starting_balance_for_the_week=196000,
                  max_percent_drop_for_the_day=4,
                  break_start_hour=13,
-                 break_end_hour=17)
+                 break_start_minute=30,
+                 break_end_hour=23,
+                 break_end_minute=59)
 
 
 handlers.run(

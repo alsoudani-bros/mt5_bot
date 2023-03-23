@@ -14,6 +14,10 @@ import numpy as np
 from time import sleep
 import winsound
 from threading import Thread
+from pushbullet import PushBullet
+from pywebio.input import *
+from pywebio.output import *
+from pywebio.session import *
 register_matplotlib_converters()
 
 config = dotenv_values(".env")
@@ -27,11 +31,18 @@ server = "MetaQuotes-Demo"
 
 
 def establish_MT5_connection(login, server, password):
+    now= datetime.now()
     if not mt5.initialize(login=int(login), server=server, password=password):
         print("Connection failed............")
         mt5.shutdown()
+        push_notification_header=f"Connection Failure to MT5"
+        push_notification_body=f"Failed to connect to MT5 {now}"
+        send_push_notification(push_notification_header, push_notification_body)
     else:
         print("Successfully connected.........")
+        push_notification_header=f"Connected to MT5"
+        push_notification_body=f"Successfully connected to MT5 {now}"
+        send_push_notification(push_notification_header, push_notification_body)
 
 
 # establish_MT5_connection(login, server, password)
@@ -45,7 +56,7 @@ def shutdown_MT5_connection():
 def run(wait_callback, callback, **kwargs):
     minutes = kwargs.get("minutes", {0})
     hours = kwargs.get("hours")
-
+    now=datetime.now()
     while True:
         try:
             if (datetime.now().second == 10 and (datetime.now().minute in minutes and (hours is None or datetime.now().hour in hours))):
@@ -59,6 +70,12 @@ def run(wait_callback, callback, **kwargs):
         except Exception as e:
             print(f"some issue in the process happened at {datetime.now()}")
             print('Failed market checking ' + str(e))
+            account_info = mt5.terminal_info()
+            status = account_info.connected
+            internet_connection = account_info.ping_last/1000
+            push_notification_header=f"Connection status: {status}"
+            push_notification_body=f"The ping is : {internet_connection}ms Some issues with code excution will reconnect in 1 second {now}"
+            send_push_notification(push_notification_header, push_notification_body)
             sleep(1)
 
 
@@ -253,10 +270,16 @@ def close_open_position(symbol, ticket_number):
         ring('SystemAsterisk')
         print(
             f"Successfully closed the position with ticket number: {ticket_number} on the symbol: {symbol}")
+        push_notification_header=f"Close Open Position on {symbol}"
+        push_notification_body=f"Successfully closed the position with ticket number: {ticket_number} on the symbol: {symbol}"
+        send_push_notification(push_notification_header, push_notification_body)
     else:
         ring('SystemHand')
         print(
             f"Failed to close the position with ticket number: {ticket_number} on the symbol: {symbol}")
+        push_notification_header=f"Failed To Close Open Position on {symbol}"
+        push_notification_body=f"Failed to close the position with ticket number: {ticket_number} on the symbol: {symbol}"
+        send_push_notification(push_notification_header, push_notification_body)
 
 
 def get_open_orders():
@@ -284,12 +307,16 @@ def close_open_order(ticket_number):
     if result.retcode == 10009:
         ring('SystemAsterisk')
         print(f"{result.comment}\nPending Order number: {result.order} got removed \nTime Of Excution: {now}")
-
+        push_notification_header=f"Close Pending Order"
+        push_notification_body=f"{result.comment}\nPending Order number: {result.order} got removed \nTime Of Excution: {now}"
+        send_push_notification(push_notification_header, push_notification_body)
     else:
         ring('SystemHand')
         print(
             f"There was an error sending the request\nThe error code: {result.retcode}\nThe request was:\n{request}\nTime Of Request: {now}")
-
+        push_notification_header=f"Failed To Close Pending Order"
+        push_notification_body=f"There was an error sending the request\nThe error code: {result.retcode}\nThe request was:\n{request}\nTime Of Request: {now}"
+        send_push_notification(push_notification_header, push_notification_body)
 
 def check_connection():
     account_info = mt5.terminal_info()
@@ -359,11 +386,17 @@ def send_market_order(symbol, direction, stop_loss_price, risk_reward_ratio, ris
     if result.retcode == 10009:
         ring('SystemAsterisk')
         print(f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {result.price}\nTime Of Excution: {now}")
+        push_notification_header = f"Market order placed {symbol} {direction}"
+        push_notification_body = f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {result.price}\nTime Of Excution: {now}"
+        send_push_notification(push_notification_header, push_notification_body)
     else:
         ring('SystemHand')
         print(
             f"There was an error sending the request\nThe error code: {result.retcode}\nThe request was:\n{request}\nTime Of Request: {now}")
-
+        push_notification_header = f"Failed to place Market order {symbol} {direction}"
+        push_notification_body = f"There was an error sending the request\nThe error code: {result.retcode}\nThe request was:\n{request}\nTime Of Request: {now}"
+        send_push_notification(push_notification_header, push_notification_body)
+    
 
 def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_reward_ratio, risk_percent):
     random_id = random.randint(100000000, 999999999)
@@ -405,21 +438,32 @@ def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_rewar
             "type_time": mt5.ORDER_TIME_GTC,
             "type_filling": mt5.ORDER_FILLING_FOK
         }
-    result = mt5.order_send(request)
     now = datetime.now()
+    result = mt5.order_send(request)
     if result.retcode == 10009:
         ring('SystemAsterisk')
         print(f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {result.price}\nTime Of Excution: {now}")
+        push_notification_header = f"Limit order placed {symbol} {direction}"
+        push_notification_body = f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {result.price}\nTime Of Excution: {now}"
+        send_push_notification(push_notification_header, push_notification_body)
     else:
         ring('SystemHand')
         print(
             f"There was an error sending the request\nThe error code: {result.retcode}\nThe request was:\n{request}\nTime Of Request: {now}")
+        push_notification_header = f"Failed to place Limit order {symbol} {direction}"
+        push_notification_body = f"There was an error sending the request\nThe error code: {result.retcode}\nThe request was:\n{request}\nTime Of Request: {now}"
+        send_push_notification(push_notification_header, push_notification_body)
 
 
 def ring(track_name):
     soundProcess = Thread(target=winsound.PlaySound, args=[
         track_name, winsound.SND_ALIAS])
     soundProcess.start()
+
+def send_push_notification(header, body):
+    push_bullet_access_token = config.get("PUSH_BULLET_ACCESS_TOKEN")
+    pb = PushBullet(push_bullet_access_token)
+    pb.push_note(header, body)
 
 
 # ring('SystemAsterisk')
@@ -490,3 +534,14 @@ def ring(track_name):
 # print(request)
 # result = mt5.order_send(request)
 # print(result)
+data = "Hello World"
+price_excution = "long at 1234.56"
+
+ 
+# Send the data by passing the main title
+# and text to be send
+
+ 
+# Put a success message after sending
+# the notification
+# put_success("Message sent successfully...")
