@@ -464,6 +464,7 @@ def send_push_notification(header, body):
     push_bullet_access_token = config.get("PUSH_BULLET_ACCESS_TOKEN")
     pb = PushBullet(push_bullet_access_token)
     pb.push_note(header, body)
+    print("push notification sent")
 
 
 # ring('SystemAsterisk')
