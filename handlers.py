@@ -466,7 +466,6 @@ def send_push_notification(header, body):
     pb.push_note(header, body)
     print("push notification sent")
 
-
 # ring('SystemAsterisk')
 # ring('SystemExclamation')
 # ring('SystemExit')
@@ -510,7 +509,7 @@ def send_push_notification(header, body):
 # get_recent_pivot_high("US100.cash", "15min", 20, 2)
 # get_recent_pivot_low("US100.cash", "15min", 20, 2)
 # within_the_period(5, 0, 13, 0)
-send_push_notification("header", "body")
+# send_push_notification("test", "test body")
 
 # symbol = "EURUSD"
 # lot = 0.1
