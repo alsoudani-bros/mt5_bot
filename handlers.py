@@ -95,7 +95,7 @@ def break_period(period_start_hour, period_start_minute, period_end_hour, period
         return False
 
 
-def news_release(symbol, month, day, hour, minute, news_type):
+def news_release_or_weekend(symbol, month, day, hour, minute, reason):
     now = datetime.now()
     news_release_time = now.replace(
         month=month, day=day, hour=hour, minute=minute)
@@ -106,7 +106,7 @@ def news_release(symbol, month, day, hour, minute, news_type):
         return True
     else:
         print(
-            f"the remaining time for the {news_type} on the symbol: {symbol} is {before_news_release - now}")
+            f"the remaining time for the {reason} on the symbol: {symbol} is {before_news_release - now}")
         return False
 
 
@@ -509,6 +509,7 @@ def send_push_notification(header, body):
 # get_recent_pivot_high("US100.cash", "15min", 20, 2)
 # get_recent_pivot_low("US100.cash", "15min", 20, 2)
 # within_the_period(5, 0, 13, 0)
+send_push_notification("header", "body")
 
 # symbol = "EURUSD"
 # lot = 0.1
@@ -534,9 +535,8 @@ def send_push_notification(header, body):
 # print(request)
 # result = mt5.order_send(request)
 # print(result)
-data = "Hello World"
-price_excution = "long at 1234.56"
-
+# data = "Hello World"
+# price_excution = "long at 1234.56"
  
 # Send the data by passing the main title
 # and text to be send
