@@ -50,7 +50,7 @@ def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_perc
     recent_pivot_high = handlers.get_recent_pivot_high(
         symbol, time_frame, 20, 2)
     recent_pivot_low = handlers.get_recent_pivot_low(symbol, time_frame, 20, 2)
-
+    distance_between_recent_pivot_high_and_low = recent_pivot_high - recent_pivot_low
     last_candle = handlers.get_candles_by_count(symbol, time_frame, 1)[0]
     last_candle_open = last_candle[1]
     last_candle_close = last_candle[4]
@@ -64,11 +64,13 @@ def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_perc
                 else:
                     print("take a long position")
                     stop_loss = recent_pivot_low
-                    handlers.send_market_order(
-                        symbol, "long", stop_loss, risk_reward_ratio, risk_percent)
-                    entry_price = recent_pivot_high
-                    handlers.send_limit_order(
-                        symbol, "long", entry_price, stop_loss, risk_reward_ratio, risk_percent)
+                    distance_between_recent_pivot_high_and_last_candle_close = last_candle_close - recent_pivot_high
+                    if distance_between_recent_pivot_high_and_low * 0.2 > distance_between_recent_pivot_high_and_last_candle_close:
+                        handlers.send_market_order(symbol, "long", stop_loss, risk_reward_ratio, risk_percent*2)
+                    else:
+                        handlers.send_market_order(symbol, "long", stop_loss, risk_reward_ratio, risk_percent)
+                        entry_price = recent_pivot_high
+                        handlers.send_limit_order(symbol, "long", entry_price, stop_loss, risk_reward_ratio, risk_percent)
                     last_long_position_pivot_high = recent_pivot_high
             elif last_candle_close < recent_pivot_low and last_candle_open >= recent_pivot_low:
                 if last_short_position_pivot_low == recent_pivot_low:
@@ -77,11 +79,13 @@ def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_perc
                 else:
                     print("take a short position")
                     stop_loss = recent_pivot_high
-                    handlers.send_market_order(
-                        symbol, "short", stop_loss, risk_reward_ratio, risk_percent)
-                    entry_price = recent_pivot_low
-                    handlers.send_limit_order(
-                        symbol, "short", entry_price, stop_loss, risk_reward_ratio, risk_percent)
+                    distance_between_recent_pivot_low_and_last_candle_close = recent_pivot_low - last_candle_close
+                    if distance_between_recent_pivot_high_and_low * 0.2 > distance_between_recent_pivot_low_and_last_candle_close:
+                        handlers.send_market_order(symbol, "short", stop_loss, risk_reward_ratio, risk_percent*2)
+                    else:
+                        handlers.send_market_order(symbol, "short", stop_loss, risk_reward_ratio, risk_percent)
+                        entry_price = recent_pivot_low
+                        handlers.send_limit_order(symbol, "short", entry_price, stop_loss, risk_reward_ratio, risk_percent)
                     last_short_position_pivot_low = recent_pivot_low
             else:
                 print("no conditions met and no position taken")
@@ -114,20 +118,22 @@ def manage_pending_orders(symbol, recent_pivot_high, recent_pivot_low):
 def still_alive():
     pass
 
+symbols=["US100.cash", "XAUUSD", "GBPUSD"]
 
 def check_market_callback():
-    check_market(symbol="US100.cash",
-                 time_frame="15min",
-                 stage_one_risk_percent=0.25,
-                 stage_two_risk_percent=0.5,
-                 stages_cut_profit_percent=2.5,
-                 risk_reward_ratio=1.9,
-                 starting_balance_for_the_week=196000,
-                 max_percent_drop_for_the_day=4,
-                 break_start_hour=13,
-                 break_start_minute=30,
-                 break_end_hour=23,
-                 break_end_minute=59)
+    for symbol in symbols:
+        check_market(symbol=symbol,
+                    time_frame="15min",
+                    stage_one_risk_percent=0.1,
+                    stage_two_risk_percent=0.2,
+                    stages_cut_profit_percent=2.5,
+                    risk_reward_ratio=2,
+                    starting_balance_for_the_week=191000,
+                    max_percent_drop_for_the_day=4,
+                    break_start_hour=13,
+                    break_start_minute=30,
+                    break_end_hour=23,
+                    break_end_minute=59)
 
 
 handlers.run(
