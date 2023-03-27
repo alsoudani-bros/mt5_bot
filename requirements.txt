@@ -7,4 +7,4 @@ scipy==1.10.1
 pywebio
 pushbullet.py
 elementpath
-beautifulsoup4
+opnepyxl
