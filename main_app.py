@@ -13,6 +13,7 @@ import handlers
 from pandas.plotting import register_matplotlib_converters
 import winsound
 from threading import Thread
+from time import sleep
 register_matplotlib_converters()
 config = dotenv_values(".env")
 
@@ -28,17 +29,20 @@ handlers.establish_MT5_connection(
     login, server, password)
 
 last_long_position_pivot_high = 0
+last_long_position_pivot_high_ticket = 0
 last_short_position_pivot_low = 0
-
+last_short_position_pivot_low_ticket = 0
 
 def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_percent, stages_cut_profit_percent, risk_reward_ratio, starting_balance_for_the_week, max_percent_drop_for_the_day, break_start_hour, break_start_minute, break_end_hour, break_end_minute):
 
-    global last_short_position_pivot_low
     global last_long_position_pivot_high
+    global last_long_position_pivot_high_ticket
+    global last_short_position_pivot_low
+    global last_short_position_pivot_low_ticket
 
     current_balance = handlers.get_balance()
     net_profit = current_balance - starting_balance_for_the_week
-    account_change_percent = round(net_profit/starting_balance_for_the_week, 2)
+    account_change_percent = round((net_profit/starting_balance_for_the_week)*100, 2)
 
     if account_change_percent < stages_cut_profit_percent:
         risk_percent = stage_one_risk_percent
@@ -47,95 +51,79 @@ def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_perc
         risk_percent = stage_two_risk_percent
         print(f"will use {stage_two_risk_percent} risk because account net change percent is {account_change_percent} which is more than {stages_cut_profit_percent} cut point")
 
-    recent_pivot_high = handlers.get_recent_pivot_high(
-        symbol, time_frame, 20, 2)
+    recent_pivot_high = handlers.get_recent_pivot_high(symbol, time_frame, 20, 2)
+    while not isinstance(recent_pivot_high, float):
+        now= datetime.now().strftime("%d/%m/%Y %H:%M")
+        print(f"Trying to get the recent pivot high for the {symbol} at {now}")
+        recent_pivot_high = handlers.get_recent_pivot_high(symbol, time_frame, 20, 2)
+        sleep(5)
+        
     recent_pivot_low = handlers.get_recent_pivot_low(symbol, time_frame, 20, 2)
-    distance_between_recent_pivot_high_and_low = recent_pivot_high - recent_pivot_low
-    last_candle = handlers.get_candles_by_count(symbol, time_frame, 1)[0]
-    last_candle_open = last_candle[1]
-    last_candle_close = last_candle[4]
-
+    while not isinstance(recent_pivot_low, float):
+        now= datetime.now().strftime("%d/%m/%Y %H:%M")
+        print(f"Trying to get the recent pivot low for the {symbol} at {now}")
+        recent_pivot_low = handlers.get_recent_pivot_low(symbol, time_frame, 20, 2)
+        sleep(5)
+    last_candle = handlers.get_candles_by_count(symbol, time_frame, 1)
+    last_candle_open = last_candle['open'][0]
+    last_candle_close = last_candle['close'][0]
+    
     if not handlers.break_period(break_start_hour, break_start_minute, break_end_hour, break_end_minute):
-        if account_change_percent > - max_percent_drop_for_the_day/100:
+        if not handlers.reached_max_loss(starting_balance_for_the_week, current_balance, 4.5):
             if last_candle_close > recent_pivot_high and last_candle_open <= recent_pivot_high:
-                if last_long_position_pivot_high == recent_pivot_high:
+                if last_long_position_pivot_high == recent_pivot_high and handlers.position_still_open(symbol, last_long_position_pivot_high_ticket):
                     handlers.ring('SystemHand')
-                    print("Pass previously taken a long position at this pivot high")
+                    print(f"Will not take another position at this pivot high because we already have a position open at this pivot high and the ticket number is {last_long_position_pivot_high_ticket}")
                 else:
-                    print("take a long position")
+                    print("Take a long position")
                     stop_loss = recent_pivot_low
-                    distance_between_recent_pivot_high_and_last_candle_close = last_candle_close - recent_pivot_high
-                    if distance_between_recent_pivot_high_and_low * 0.2 > distance_between_recent_pivot_high_and_last_candle_close:
-                        handlers.send_market_order(symbol, "long", stop_loss, risk_reward_ratio, risk_percent*2)
-                    else:
+                    handlers.send_market_order(symbol, "long", stop_loss, risk_reward_ratio, risk_percent)
+                    entry_price = recent_pivot_high
+                    if not handlers.send_limit_order(symbol, "long", entry_price, stop_loss, risk_reward_ratio, risk_percent):
                         handlers.send_market_order(symbol, "long", stop_loss, risk_reward_ratio, risk_percent)
-                        entry_price = recent_pivot_high
-                        handlers.send_limit_order(symbol, "long", entry_price, stop_loss, risk_reward_ratio, risk_percent)
                     last_long_position_pivot_high = recent_pivot_high
+                    last_long_position_pivot_high_ticket = handlers.get_most_recent_position(symbol).ticket
             elif last_candle_close < recent_pivot_low and last_candle_open >= recent_pivot_low:
-                if last_short_position_pivot_low == recent_pivot_low:
+                if last_short_position_pivot_low == recent_pivot_low and handlers.position_still_open(symbol, last_short_position_pivot_low_ticket):
                     handlers.ring('SystemHand')
-                    print("Pass previously taken a short position at this pivot low")
+                    print(f"Will not take another position at this pivot low because we already have a position open at this pivot low and the ticket number is {last_short_position_pivot_low_ticket}")
                 else:
                     print("take a short position")
                     stop_loss = recent_pivot_high
-                    distance_between_recent_pivot_low_and_last_candle_close = recent_pivot_low - last_candle_close
-                    if distance_between_recent_pivot_high_and_low * 0.2 > distance_between_recent_pivot_low_and_last_candle_close:
-                        handlers.send_market_order(symbol, "short", stop_loss, risk_reward_ratio, risk_percent*2)
-                    else:
+                    handlers.send_market_order(symbol, "short", stop_loss, risk_reward_ratio, risk_percent)
+                    entry_price = recent_pivot_low
+                    if not handlers.send_limit_order(symbol, "short", entry_price, stop_loss, risk_reward_ratio, risk_percent):
                         handlers.send_market_order(symbol, "short", stop_loss, risk_reward_ratio, risk_percent)
-                        entry_price = recent_pivot_low
-                        handlers.send_limit_order(symbol, "short", entry_price, stop_loss, risk_reward_ratio, risk_percent)
                     last_short_position_pivot_low = recent_pivot_low
+                    last_short_position_pivot_low_ticket = handlers.get_most_recent_position(symbol).ticket
             else:
-                print("no conditions met and no position taken")
+                print("No conditions met and No position taken")
         else:
-            print(
-                f"The today's account profit percent is {account_change_percent} which is below the {-max_percent_drop_for_the_day/100} limit")
+            handlers.close_all_open_orders(symbol)
+            handlers.close_all_open_positions(symbol)
 
-        manage_pending_orders(symbol, recent_pivot_high, recent_pivot_low)
-
-        handlers.get_open_positions()
-    else:
-        print("The Break time now no trading.......")
-
-
-def manage_pending_orders(symbol, recent_pivot_high, recent_pivot_low):
-    pending_orders = handlers.get_open_orders()
-    available_open_orders = mt5.orders_total()
-    if available_open_orders > 0:
-        for order in pending_orders:
-            if order.symbol == symbol and order.type == 2 and order.price_open < recent_pivot_low:
-                handlers.close_open_order(order.ticket)
-            elif order.symbol == symbol and order.type == 3 and order.price_open > recent_pivot_high:
-                handlers.close_open_order(order.ticket)
-            else:
-                print("No Change on the pending orders and they are still valid")
-    else:
-        print("No available open pending orders")
-
+    handlers.manage_pending_orders_depends_on_pivots(symbol, recent_pivot_high, recent_pivot_low)
 
 def still_alive():
     pass
 
-symbols=["US100.cash", "XAUUSD", "GBPUSD"]
-
 def check_market_callback():
-    for symbol in symbols:
-        check_market(symbol=symbol,
-                    time_frame="15min",
-                    stage_one_risk_percent=0.1,
-                    stage_two_risk_percent=0.2,
-                    stages_cut_profit_percent=2.5,
-                    risk_reward_ratio=2,
-                    starting_balance_for_the_week=191000,
-                    max_percent_drop_for_the_day=4,
-                    break_start_hour=13,
-                    break_start_minute=30,
-                    break_end_hour=23,
-                    break_end_minute=59)
+    check_market(symbol=symbol,
+                time_frame="15min",
+                stage_one_risk_percent=0.1,
+                stage_two_risk_percent=0.2,
+                stages_cut_profit_percent=2.5,
+                risk_reward_ratio=2,
+                starting_balance_for_the_week=191000,
+                max_percent_drop_for_the_day=4,
+                break_start_hour=13,
+                break_start_minute=30,
+                break_end_hour=17,
+                break_end_minute=30)
 
 
+symbol= input("Enter the symbol you want to trade: ").strip()
+print(symbol)
 handlers.run(
     minutes={15, 30, 45, 0},
     callback=check_market_callback,

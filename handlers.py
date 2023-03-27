@@ -19,19 +19,24 @@ from pywebio.input import *
 from pywebio.output import *
 from pywebio.session import *
 register_matplotlib_converters()
-
 config = dotenv_values(".env")
 
-# login = config.get("CHALLANGE_MT_LOGIN")
-# password = config.get("CHALLANGE_MT_PASSWORD")
-# server="FTMO-Server"
-login = config.get("MT_LOGIN")
-password = config.get("MT_PASSWORD")
-server = "MetaQuotes-Demo"
+login = config.get("CHALLANGE_MT_LOGIN")
+password = config.get("CHALLANGE_MT_PASSWORD")
+server="FTMO-Server"
 
+# login = config.get("MT_LOGIN")
+# password = config.get("MT_PASSWORD")
+# server = "MetaQuotes-Demo"
+
+def send_push_notification(header, body):
+    push_bullet_access_token = config.get("PUSH_BULLET_ACCESS_TOKEN")
+    pb = PushBullet(push_bullet_access_token)
+    pb.push_note(header, body)
+    print("push notification sent")
 
 def establish_MT5_connection(login, server, password):
-    now= datetime.now()
+    now= datetime.now().strftime("%d/%m/%Y %H:%M")
     if not mt5.initialize(login=int(login), server=server, password=password):
         print("Connection failed............")
         mt5.shutdown()
@@ -44,19 +49,10 @@ def establish_MT5_connection(login, server, password):
         push_notification_body=f"Successfully connected to MT5 {now}"
         send_push_notification(push_notification_header, push_notification_body)
 
-
-# establish_MT5_connection(login, server, password)
-
-
-def shutdown_MT5_connection():
-    mt5.shutdown()
-    print(f"You are now disconnected.......")
-
-
 def run(wait_callback, callback, **kwargs):
+    now= datetime.now().strftime("%d/%m/%Y %H:%M")
     minutes = kwargs.get("minutes", {0})
     hours = kwargs.get("hours")
-    now=datetime.now()
     while True:
         try:
             if (datetime.now().second == 10 and (datetime.now().minute in minutes and (hours is None or datetime.now().hour in hours))):
@@ -68,16 +64,16 @@ def run(wait_callback, callback, **kwargs):
                 wait_callback()
                 sleep(.5)
         except Exception as e:
-            print(f"some issue in the process happened at {datetime.now()}")
+            print(f"some issue in the process happened at {now}")
             print('Failed market checking ' + str(e))
             account_info = mt5.terminal_info()
             status = account_info.connected
             internet_connection = account_info.ping_last/1000
             push_notification_header=f"Connection status: {status}"
-            push_notification_body=f"The ping is : {internet_connection}ms Some issues with code excution will reconnect in 1 second {now}"
+            push_notification_body=f"The ping is : {internet_connection}ms Some issues with code execution will reconnect in 1 second {now}"
             send_push_notification(push_notification_header, push_notification_body)
             sleep(1)
-
+            callback()
 
 def break_period(period_start_hour, period_start_minute, period_end_hour, period_end_minute):
     now = datetime.now()
@@ -88,12 +84,11 @@ def break_period(period_start_hour, period_start_minute, period_end_hour, period
     current_time = now.strftime("%H:%M:%S")
     print(current_time)
     if now >= start_time and now <= end_time:
-        print("Break period")
+        print("Break period no trading")
         return True
     else:
-        print("Not a break period")
+        print("Trading time")
         return False
-
 
 def news_release_or_weekend(symbol, month, day, hour, minute, reason):
     now = datetime.now()
@@ -102,13 +97,13 @@ def news_release_or_weekend(symbol, month, day, hour, minute, reason):
     before_news_release = news_release_time - datetime.timedelta(minutes=5)
     after_news_release = news_release_time + datetime.timedelta(minutes=5)
     if now >= before_news_release and now <= after_news_release:
-        print(f"avoid new release time for {symbol}")
+        print(f"Avoid news release time for {symbol}")
+        send_push_notification(f"Stop the bot news release soon for {symbol}", f"{reason}")
         return True
     else:
         print(
             f"the remaining time for the {reason} on the symbol: {symbol} is {before_news_release - now}")
         return False
-
 
 def get_recent_pivot_high(symbol, time_frame, candles_count, candles_count_on_each_side):
     candles = get_candles_by_count(symbol, time_frame, candles_count)
@@ -124,7 +119,6 @@ def get_recent_pivot_high(symbol, time_frame, candles_count, candles_count_on_ea
                 f"The most recent pivot high is {ticks_frame['max'][candle_index_under_evaluation]}")
             return ticks_frame['max'][candle_index_under_evaluation]
 
-
 def get_recent_pivot_low(symbol, time_frame, candles_count, candles_count_on_each_side):
     candles = get_candles_by_count(symbol, time_frame, candles_count)
     ticks_frame = pd.DataFrame(candles)
@@ -139,7 +133,6 @@ def get_recent_pivot_low(symbol, time_frame, candles_count, candles_count_on_eac
                 f"The most recent pivot low is {ticks_frame['min'][candle_index_under_evaluation]}")
             return ticks_frame['min'][candle_index_under_evaluation]
 
-
 def get_candles_by_count(symbol, time_frame, candles_count):
     time_frame = time_frame.strip()
     match time_frame:
@@ -151,13 +144,12 @@ def get_candles_by_count(symbol, time_frame, candles_count):
             selected_time_frame = mt5.TIMEFRAME_M30
         case "1hour":
             selected_time_frame = mt5.TIMEFRAME_H1
-    rates = mt5.copy_rates_from_pos(
-        symbol, selected_time_frame, 1, candles_count)
+    rates = mt5.copy_rates_from_pos(symbol, selected_time_frame, 1, candles_count)
+    ticks_frame = pd.DataFrame(rates)
     # print(
     #     f"The last {len(rates)} candles received for the symbol {symbol} in the {time_frame} time frame:")
-    # print(rates)
-    return rates
-
+    # print(ticks_frame)
+    return ticks_frame
 
 def get_candles_by_date(symbol, time_frame, from_date, to_date, save_to="last_saved_candles.csv"):
     time_frame = time_frame.strip()
@@ -200,36 +192,12 @@ def get_candles_by_date(symbol, time_frame, from_date, to_date, save_to="last_sa
     rates.to_csv(save_to)
     return rates
 
-
-def get_equity():
-    equity = mt5.account_info().equity
-    print(f"Current equity is: {equity}$")
-    return equity
-
-
 def get_balance():
+    now= datetime.now().strftime("%d/%m/%Y %H:%M")
     balance = mt5.account_info().balance
     print(f"Current Balance is: {balance}$")
+    send_push_notification(f"The Balance as of {now}",f"The current balance is {balance}$")
     return balance
-
-
-def get_account_name():
-    name = mt5.account_info().name
-    print(f" The name of the current connected account is: {name}")
-    return name
-
-
-def get_profit():
-    profit = mt5.account_info().profit
-    print(f"Total profits are: {profit}$")
-    return profit
-
-
-def get_margin_free():
-    margin_free = mt5.account_info().margin_free
-    print(f"The available margin for trading is: {margin_free}$")
-    return margin_free
-
 
 def get_available_symbols():
     available_symbols = []
@@ -239,7 +207,6 @@ def get_available_symbols():
         print(s.name)
         available_symbols.append(s.name)
     return available_symbols
-
 
 def get_symbol_info(symbol):
     # symbol = symbol.upper()
@@ -254,61 +221,68 @@ def get_symbol_info(symbol):
         f"Name: {name}\nSpread: {spread}\nPip Size: {pip_size}\nContract Size: {contract_size}")
     return name, spread, pip_size, contract_size
 
-
-def get_open_positions():
-    positions_total = mt5.positions_total()
-    positions = mt5.positions_get()
-    print(f"Total open positions: {positions_total} positions")
-    for position in positions:
-        print(f"Position Ticket: {position.ticket}\nPosition time: {position.time}\nPosition magic: {position.magic}\nPosition symbol: {position.symbol}\nPosition Volume: {position.volume}\nPosition entry price: {position.price_open}\nPosition stop loss price: {position.sl}\nPosition take profit price: {position.tp}")
-    return positions
-
-
 def close_open_position(symbol, ticket_number):
+    now= datetime.now().strftime("%d/%m/%Y %H:%M")
     result = mt5.Close(symbol, ticket=ticket_number)
     if result:
         ring('SystemAsterisk')
         print(
-            f"Successfully closed the position with ticket number: {ticket_number} on the symbol: {symbol}")
+            f"Successfully closed the position with ticket number: {ticket_number} on the symbol: {symbol} time of closing: {now}")
         push_notification_header=f"Close Open Position on {symbol}"
-        push_notification_body=f"Successfully closed the position with ticket number: {ticket_number} on the symbol: {symbol}"
+        push_notification_body=f"Successfully closed the position with ticket number: {ticket_number} on the symbol: {symbol} time of closing: {now}"
         send_push_notification(push_notification_header, push_notification_body)
     else:
         ring('SystemHand')
         print(
-            f"Failed to close the position with ticket number: {ticket_number} on the symbol: {symbol}")
+            f"Failed to close the position with ticket number: {ticket_number} on the symbol: {symbol} failed to close at: {now}")
         push_notification_header=f"Failed To Close Open Position on {symbol}"
-        push_notification_body=f"Failed to close the position with ticket number: {ticket_number} on the symbol: {symbol}"
+        push_notification_body=f"Failed to close the position with ticket number: {ticket_number} on the symbol: {symbol} failed to close at: {now}"
         send_push_notification(push_notification_header, push_notification_body)
 
 
-def get_open_orders():
-    orders_total = mt5.orders_total()
-    orders = mt5.orders_get()
-    print(orders)
-    print(f"Total open orders: {orders_total} orders")
-    for order in orders:
-        if order.type == 2:
-            print(f"Order Ticket: {order.ticket}\nOrder time: {order.time_setup}\nOrder magic: {order.magic}\nOrder symbol: {order.symbol}\nDirection: Long\nOrder Volume: {order.volume_current}\nOrder entry price: {order.price_open}\nOrder stop loss price: {order.sl}\nOrder take profit price: {order.tp}")
-        elif order.type == 3:
-            print(f"Order Ticket: {order.ticket}\nOrder time: {order.time_setup}\nOrder magic: {order.magic}\nOrder symbol: {order.symbol}\nDirection: Short\nOrder Volume: {order.volume_current}\nOrder entry price: {order.price_open}\nOrder stop loss price: {order.sl}\nOrder take profit price: {order.tp}")
-        else:
-            print(f"Order Ticket: {order.ticket}\nOrder time: {order.time_setup}\nOrder magic: {order.magic}\nOrder symbol: {order.symbol}\nDirection: not coded yet\nOrder Volume: {order.volume_current}\nOrder entry price: {order.price_open}\nOrder stop loss price: {order.sl}\nOrder take profit price: {order.tp}")
-    return orders
+# def get_open_orders():Not useful function
+    # orders_total = mt5.orders_total()
+    # orders = mt5.orders_get()
+    # print(orders)
+    # print(f"Total open orders: {orders_total} orders")
+    # for order in orders:
+        # if order.type == 2:
+        #     print(f"Order Ticket: {order.ticket}\nOrder time: {order.time_setup}\nOrder magic: {order.magic}\nOrder symbol: {order.symbol}\nDirection: Long\nOrder Volume: {order.volume_current}\nOrder entry price: {order.price_open}\nOrder stop loss price: {order.sl}\nOrder take profit price: {order.tp}")
+        # elif order.type == 3:
+        #     print(f"Order Ticket: {order.ticket}\nOrder time: {order.time_setup}\nOrder magic: {order.magic}\nOrder symbol: {order.symbol}\nDirection: Short\nOrder Volume: {order.volume_current}\nOrder entry price: {order.price_open}\nOrder stop loss price: {order.sl}\nOrder take profit price: {order.tp}")
+        # else:
+        #     print(f"Order Ticket: {order.ticket}\nOrder time: {order.time_setup}\nOrder magic: {order.magic}\nOrder symbol: {order.symbol}\nDirection: not coded yet\nOrder Volume: {order.volume_current}\nOrder entry price: {order.price_open}\nOrder stop loss price: {order.sl}\nOrder take profit price: {order.tp}")
+    # return orders
 
+def close_all_open_positions(symbol):
+    now= datetime.now().strftime("%d/%m/%Y %H:%M")
+    print(f"Start closing all open positions for the symbol: {symbol}")
+    positions = mt5.positions_get(symbol=symbol)
+    if len(positions) > 0:
+        for position in positions:
+            close_open_position(symbol, position.ticket)
+        print(f"All open positions are closed on the symbol: {symbol} time of closing: {now}")
+        push_notification_header=f"All open positions closed on {symbol}"
+        push_notification_body=f"All open positions are closed on the symbol: {symbol} time of closing: {now}"
+        send_push_notification(push_notification_header, push_notification_body)
+    else:
+        print(f"No open positions to close for the symbol: {symbol} time of checking: {now}")
+        push_notification_header=f"No Open Positions to close on {symbol}"
+        push_notification_body=f"No open positions to close for the symbol: {symbol} time of checking: {now}"
+        send_push_notification(push_notification_header, push_notification_body)
 
 def close_open_order(ticket_number):
+    now= datetime.now().strftime("%d/%m/%Y %H:%M")
     request = {
         "action": mt5.TRADE_ACTION_REMOVE,
         "order": ticket_number
     }
     result = mt5.order_send(request)
-    now = datetime.now()
     if result.retcode == 10009:
         ring('SystemAsterisk')
-        print(f"{result.comment}\nPending Order number: {result.order} got removed \nTime Of Excution: {now}")
+        print(f"{result.comment}\nPending Order number: {result.order} got removed \nTime Of Execution: {now}")
         push_notification_header=f"Close Pending Order"
-        push_notification_body=f"{result.comment}\nPending Order number: {result.order} got removed \nTime Of Excution: {now}"
+        push_notification_body=f"{result.comment}\nPending Order number: {result.order} got removed \nTime Of Execution: {now}"
         send_push_notification(push_notification_header, push_notification_body)
     else:
         ring('SystemHand')
@@ -318,22 +292,38 @@ def close_open_order(ticket_number):
         push_notification_body=f"There was an error sending the request\nThe error code: {result.retcode}\nThe request was:\n{request}\nTime Of Request: {now}"
         send_push_notification(push_notification_header, push_notification_body)
 
-def check_connection():
-    account_info = mt5.terminal_info()
-    status = account_info.connected
-    internet_connection = account_info.ping_last/1000
-    number_of_available_symbols = mt5.symbols_total()
-    if status:
-        print(
-            f'You have established connection with the Metatrader5 terminal \nThe Ping is {round(internet_connection)} ms \nThe total available symbols for trading are {number_of_available_symbols}')
-        return status, internet_connection
+def close_all_open_orders(symbol):
+    now= datetime.now().strftime("%d/%m/%Y %H:%M")
+    print(f"Start closing all open orders for the symbol: {symbol}")
+    orders = mt5.orders_get(symbol=symbol)
+    if len(orders) > 0:
+        for order in orders:
+            close_open_order(order.ticket)
+        print(f"All open orders are closed on the symbol: {symbol} time of closing: {now}")
+        push_notification_header=f"All open orders closed on {symbol}"
+        push_notification_body=f"All open orders are closed on the symbol: {symbol} time of closing: {now}"
+        send_push_notification(push_notification_header, push_notification_body)
     else:
-        ring('SystemHand')
-        print("No connection with the Metatrader5 terminal")
-        return status
-
+        print(f"No open orders to close for the symbol: {symbol} time of checking: {now}")
+        push_notification_header=f"No Open Orders to close on {symbol}"
+        push_notification_body=f"No open orders to close for the symbol: {symbol} time of checking: {now}"
+        send_push_notification(push_notification_header, push_notification_body)
+        
+def manage_pending_orders_depends_on_pivots(symbol, recent_pivot_high, recent_pivot_low):
+    pending_orders = mt5.orders_get(symbol=symbol)
+    if len(pending_orders) > 0:
+        for order in pending_orders:
+            if order.type == 2 and order.price_open < recent_pivot_low:
+                close_open_order(order.ticket)
+            elif order.type == 3 and order.price_open > recent_pivot_high:
+                close_open_order(order.ticket)
+            else:
+                print(f"There are {len(pending_orders)} pending orders for the symbol {symbol} and they are still valid")
+    else:
+        print(f"No available open pending orders for the symbol: {symbol}")
 
 def send_market_order(symbol, direction, stop_loss_price, risk_reward_ratio, risk_percent):
+    now= datetime.now().strftime("%d/%m/%Y %H:%M")
     market_price = mt5.symbol_info_tick(symbol).ask
     random_id = random.randint(100000000, 999999999)
     money_to_risk = get_balance() * risk_percent/100
@@ -382,13 +372,13 @@ def send_market_order(symbol, direction, stop_loss_price, risk_reward_ratio, ris
         }
 
     result = mt5.order_send(request)
-    now = datetime.now()
     if result.retcode == 10009:
         ring('SystemAsterisk')
         print(f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {result.price}\nTime Of Excution: {now}")
         push_notification_header = f"Market order placed {symbol} {direction}"
         push_notification_body = f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {result.price}\nTime Of Excution: {now}"
         send_push_notification(push_notification_header, push_notification_body)
+        return True
     else:
         ring('SystemHand')
         print(
@@ -396,9 +386,27 @@ def send_market_order(symbol, direction, stop_loss_price, risk_reward_ratio, ris
         push_notification_header = f"Failed to place Market order {symbol} {direction}"
         push_notification_body = f"There was an error sending the request\nThe error code: {result.retcode}\nThe request was:\n{request}\nTime Of Request: {now}"
         send_push_notification(push_notification_header, push_notification_body)
-    
+        return False
+
+def position_still_open(symbol, ticket):
+    open_positions = mt5.positions_get(symbol=symbol)
+    if len(open_positions) > 0:
+        for position in open_positions:
+            if position.ticket == ticket:
+                return True
+    else:
+        return False
+
+def get_most_recent_position(symbol):
+    open_positions = mt5.positions_get(symbol=symbol)
+    if len(open_positions) > 0:
+        most_recent_position = open_positions[-1]
+        return most_recent_position
+    else:
+        return None
 
 def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_reward_ratio, risk_percent):
+    now= datetime.now().strftime("%d/%m/%Y %H:%M")
     random_id = random.randint(100000000, 999999999)
     money_to_risk = get_balance() * risk_percent/100
     distance_from_stop_loss = abs(entry_price - stop_loss_price)
@@ -407,6 +415,12 @@ def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_rewar
         lot_size = round(money_to_risk/distance_from_stop_loss, 2)
     elif symbol == "XAUUSD":
         lot_size = round(money_to_risk/(distance_from_stop_loss * 100), 2)
+    elif symbol == "GBPJPY":
+        lot_size = round(money_to_risk * 0.132 /
+                         (distance_from_stop_loss * 100), 2)
+    elif symbol == "EURUSD":
+        lot_size = round(money_to_risk * 0.1 /
+                         (distance_from_stop_loss * 10000), 2)
     deviation = 100
     if direction == "long":
         request = {
@@ -438,14 +452,14 @@ def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_rewar
             "type_time": mt5.ORDER_TIME_GTC,
             "type_filling": mt5.ORDER_FILLING_FOK
         }
-    now = datetime.now()
     result = mt5.order_send(request)
     if result.retcode == 10009:
         ring('SystemAsterisk')
-        print(f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {result.price}\nTime Of Excution: {now}")
+        print(f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {entry_price}\nTime Of Execution: {now}")
         push_notification_header = f"Limit order placed {symbol} {direction}"
-        push_notification_body = f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {result.price}\nTime Of Excution: {now}"
+        push_notification_body = f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {entry_price}\nTime Of Excution: {now}"
         send_push_notification(push_notification_header, push_notification_body)
+        return True
     else:
         ring('SystemHand')
         print(
@@ -453,18 +467,37 @@ def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_rewar
         push_notification_header = f"Failed to place Limit order {symbol} {direction}"
         push_notification_body = f"There was an error sending the request\nThe error code: {result.retcode}\nThe request was:\n{request}\nTime Of Request: {now}"
         send_push_notification(push_notification_header, push_notification_body)
+        return False
 
+def reached_max_loss(starting_balance, current_balance, max_loss_percentage):
+    now= datetime.now().strftime("%d/%m/%Y %H:%M")
+    max_loss = starting_balance * max_loss_percentage/100
+    if starting_balance - current_balance > max_loss:
+        print(f"Reached max loss of {starting_balance - current_balance}$ which is more than {max_loss}$")
+        push_notification_header = f"Account reached max loss"
+        push_notification_body = f"Reached max loss of {starting_balance - current_balance}$ which is more than {max_loss}$ {now}"
+        send_push_notification(push_notification_header, push_notification_body)
+        return True
+    else:
+        return False
 
 def ring(track_name):
     soundProcess = Thread(target=winsound.PlaySound, args=[
         track_name, winsound.SND_ALIAS])
     soundProcess.start()
 
-def send_push_notification(header, body):
-    push_bullet_access_token = config.get("PUSH_BULLET_ACCESS_TOKEN")
-    pb = PushBullet(push_bullet_access_token)
-    pb.push_note(header, body)
-    print("push notification sent")
+
+
+# testing..........................................................................
+# activate next line to run the script and turn it off when you are done
+# establish_MT5_connection(login, server, password)
+
+# x= get_most_recent_position("US100.cash").ticket
+# print(position_still_open("US100.cash", x))
+# print(reached_max_loss(191000, 189000, 1))
+# manage_pending_orders_depends_on_pivots("US100.cash", 12718, 12735)
+# close_all_open_orders("US100.cash")
+# close_all_open_positions("US100.cash")
 
 # ring('SystemAsterisk')
 # ring('SystemExclamation')
@@ -510,6 +543,20 @@ def send_push_notification(header, body):
 # get_recent_pivot_low("US100.cash", "15min", 20, 2)
 # within_the_period(5, 0, 13, 0)
 # send_push_notification("test", "test body")
+
+# print(get_candles_by_count("XAUUSD", "15min", 1)['open'][0])
+
+# def something():
+#     pass
+
+# def doit():
+#     get_candles_by_count(symbol=symbol, time_frame="15min", candles_count=1)
+#     print(datetime.now().strftime("%d/%m/%Y %H:%M"))
+
+# symbol = input("input symbol >> ")
+# run(something, doit, minutes={35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59})
+
+
 
 # symbol = "EURUSD"
 # lot = 0.1
