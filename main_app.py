@@ -28,17 +28,19 @@ server="FTMO-Server"
 handlers.establish_MT5_connection(
     login, server, password)
 
-last_long_position_pivot_high = 0
-last_long_position_pivot_high_ticket = 0
-last_short_position_pivot_low = 0
-last_short_position_pivot_low_ticket = 0
+last_position_pivot_high = 0
+last_long_position_ticket = 0
+last_position_pivot_low = 0
+last_short_position_ticket = 0
+last_position_direction = "direction"
 
-def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_percent, stages_cut_profit_percent, risk_reward_ratio, starting_balance_for_the_week, break_start_hour, break_start_minute, break_end_hour, break_end_minute, max_positions_open_at_once):
+def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_percent, stages_cut_profit_percent, risk_reward_ratio, starting_balance_for_the_week, break_start_hour, break_start_minute, break_end_hour, break_end_minute, max_positions_open_at_once_per_direction):
 
-    global last_long_position_pivot_high
-    global last_long_position_pivot_high_ticket
-    global last_short_position_pivot_low
-    global last_short_position_pivot_low_ticket
+    global last_position_pivot_high
+    global last_long_position_ticket
+    global last_position_pivot_low
+    global last_short_position_ticket
+    global last_position_direction
 
     current_balance = handlers.get_balance()
     net_profit = current_balance - starting_balance_for_the_week
@@ -72,14 +74,14 @@ def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_perc
     if not handlers.break_period(break_start_hour, break_start_minute, break_end_hour, break_end_minute):
         if not handlers.reached_max_loss(starting_balance_for_the_week, current_balance, 4.5):
             if last_candle_close > recent_pivot_high and last_candle_open <= recent_pivot_high:
-                if last_long_position_pivot_high == recent_pivot_high and handlers.position_still_open(symbol, last_long_position_pivot_high_ticket):
+                if last_position_pivot_high == recent_pivot_high and last_position_pivot_low == recent_pivot_low and last_position_direction == "long" and handlers.position_still_open(symbol, last_long_position_ticket):
                     handlers.ring('SystemHand')
-                    handlers.send_push_notification("Avoid position taking", f"Will not take another position at this pivot high because we already have a position open at this pivot high and the ticket number is {last_long_position_pivot_high_ticket}")
-                    print(f"Will not take another position at this pivot high because we already have a position open at this pivot high and the ticket number is {last_long_position_pivot_high_ticket}")
+                    handlers.send_push_notification("Avoid position taking", f"Will not take another position at this pivot high because we already have a position open at this pivot high and the ticket number is {last_long_position_ticket}")
+                    print(f"Will not take another position at this pivot high because we already have a position open at this pivot high and the ticket number is {last_long_position_ticket}")
                 else:
-                    if handlers.number_of_current_open_positions(symbol,"long") >= max_positions_open_at_once:
-                        print(f"Will not take another position we have {max_positions_open_at_once} or more current long positions open for the {symbol}")
-                        handlers.send_push_notification("Avoid position taking", f"Will not take another position we have {max_positions_open_at_once} or more current long positions open for the {symbol}")
+                    if handlers.number_of_current_open_positions(symbol,"long") >= max_positions_open_at_once_per_direction:
+                        print(f"Will not take another position we have {max_positions_open_at_once_per_direction} or more current long positions open for the {symbol}")
+                        handlers.send_push_notification("Avoid position taking", f"Will not take another position we have {max_positions_open_at_once_per_direction} or more current long positions open for the {symbol}")
                     else:
                         distance_between_pivot_high_last_candle_close = abs(recent_pivot_high - last_candle_close)
                         print("Taking a long position")
@@ -98,17 +100,21 @@ def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_perc
                             entry_price = recent_pivot_high
                             if not handlers.send_limit_order(symbol, "long", entry_price, stop_loss, risk_reward_ratio, risk_percent):
                                 handlers.send_market_order(symbol, "long", stop_loss, risk_reward_ratio, risk_percent)
-                        last_long_position_pivot_high = recent_pivot_high
-                        last_long_position_pivot_high_ticket = handlers.get_most_recent_position(symbol).ticket
+                        
+                        last_position_pivot_high = recent_pivot_high
+                        last_position_pivot_low = recent_pivot_low
+                        last_position_direction = "long"
+                        last_long_position_ticket = handlers.get_most_recent_position(symbol).ticket
+            
             elif last_candle_close < recent_pivot_low and last_candle_open >= recent_pivot_low:
-                if last_short_position_pivot_low == recent_pivot_low and handlers.position_still_open(symbol, last_short_position_pivot_low_ticket):
+                if last_position_pivot_high == recent_pivot_high and last_position_pivot_low == recent_pivot_low and last_position_direction == "short" and handlers.position_still_open(symbol, last_short_position_ticket):
                     handlers.ring('SystemHand')
-                    print(f"Will not take another position at this pivot low because we already have a position open at this pivot low and the ticket number is {last_short_position_pivot_low_ticket}")
-                    handlers.send_push_notification("Avoid position taking", f"Will not take another position at this pivot low because we already have a position open at this pivot low and the ticket number is {last_short_position_pivot_low_ticket}")
+                    print(f"Will not take another position at this pivot low because we already have a position open at this pivot low and the ticket number is {last_short_position_ticket}")
+                    handlers.send_push_notification("Avoid position taking", f"Will not take another position at this pivot low because we already have a position open at this pivot low and the ticket number is {last_short_position_ticket}")
                 else:
-                    if handlers.number_of_current_open_positions(symbol,"short") >= max_positions_open_at_once:
-                        print(f"Will not take another position we have {max_positions_open_at_once} or more current short positions open for the {symbol}")
-                        handlers.send_push_notification("Avoid position taking", f"Will not take another position we have {max_positions_open_at_once} or more current short positions open for the {symbol}")
+                    if handlers.number_of_current_open_positions(symbol,"short") >= max_positions_open_at_once_per_direction:
+                        print(f"Will not take another position we have {max_positions_open_at_once_per_direction} or more current short positions open for the {symbol}")
+                        handlers.send_push_notification("Avoid position taking", f"Will not take another position we have {max_positions_open_at_once_per_direction} or more current short positions open for the {symbol}")
                     else:
                         distance_between_pivot_low_last_candle_close = abs(recent_pivot_low - last_candle_close)
                         print("Taking a short position")
@@ -127,8 +133,12 @@ def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_perc
                             entry_price = recent_pivot_low
                             if not handlers.send_limit_order(symbol, "short", entry_price, stop_loss, risk_reward_ratio, risk_percent):
                                 handlers.send_market_order(symbol, "short", stop_loss, risk_reward_ratio, risk_percent)
-                        last_short_position_pivot_low = recent_pivot_low
-                        last_short_position_pivot_low_ticket = handlers.get_most_recent_position(symbol).ticket
+                        
+                        last_position_pivot_high = recent_pivot_high
+                        last_position_pivot_low = recent_pivot_low
+                        last_position_direction = "short"
+                        last_short_position_ticket = handlers.get_most_recent_position(symbol).ticket
+                        
             else:
                 print("No conditions met and No position taken")
         else:
@@ -143,16 +153,16 @@ def still_alive():
 def check_market_callback():
     check_market(symbol=symbol,
                 time_frame="15min",
-                stage_one_risk_percent=0.1,
-                stage_two_risk_percent=0.2,
+                stage_one_risk_percent=0.25,
+                stage_two_risk_percent=0.5,
                 stages_cut_profit_percent=2.5,
                 risk_reward_ratio=2,
-                starting_balance_for_the_week=193000,
+                starting_balance_for_the_week=192000,
                 break_start_hour=13,
                 break_start_minute=30,
-                break_end_hour=17,
-                break_end_minute=30,
-                max_positions_open_at_once=4)
+                break_end_hour=23,
+                break_end_minute=59,
+                max_positions_open_at_once_per_direction=10)
 
 
 symbol= input("Enter the symbol you want to trade: ").strip()
