@@ -73,7 +73,8 @@ def run(wait_callback, callback, **kwargs):
             push_notification_body=f"The ping is : {internet_connection}ms Some issues with code execution will reconnect in 1 second {now}"
             send_push_notification(push_notification_header, push_notification_body)
             sleep(1)
-            callback()
+            # next line to troubleshoot errors
+            # callback()
 
 def break_period(period_start_hour, period_start_minute, period_end_hour, period_end_minute):
     now = datetime.now()
@@ -322,6 +323,21 @@ def manage_pending_orders_depends_on_pivots(symbol, recent_pivot_high, recent_pi
     else:
         print(f"No available open pending orders for the symbol: {symbol}")
 
+def number_of_current_open_positions(symbol, direction):
+    positions = mt5.positions_get(symbol=symbol)
+    count = 0
+    if len(positions) > 0:
+        if direction == 'long':
+            for position in positions:
+                if position.type == 0:
+                    count += 1
+        elif direction =='short':
+            for position in positions:
+                if position.type == 1:
+                    count += 1
+    return count
+                
+        
 def send_market_order(symbol, direction, stop_loss_price, risk_reward_ratio, risk_percent):
     now= datetime.now().strftime("%d/%m/%Y %H:%M")
     market_price = mt5.symbol_info_tick(symbol).ask
@@ -492,6 +508,10 @@ def ring(track_name):
 # activate next line to run the script and turn it off when you are done
 # establish_MT5_connection(login, server, password)
 
+# positions = mt5.positions_get(symbol="US100.cash")
+# for position in positions:
+#     print(position.type == 1)
+# print(positions)
 # x= get_most_recent_position("US100.cash").ticket
 # print(position_still_open("US100.cash", x))
 # print(reached_max_loss(191000, 189000, 1))
