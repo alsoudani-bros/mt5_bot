@@ -70,6 +70,7 @@ def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_perc
     last_candle = handlers.get_candles_by_count(symbol, time_frame, 1)
     last_candle_open = last_candle['open'][0]
     last_candle_close = last_candle['close'][0]
+    print(f"last candle open: {last_candle_open} and close: {last_candle_close}")
     
     if not handlers.break_period(break_start_hour, break_start_minute, break_end_hour, break_end_minute):
         if not handlers.reached_max_loss(starting_balance_for_the_week, current_balance, 4.5):
@@ -156,7 +157,7 @@ def check_market_callback():
                 stage_one_risk_percent=0.25,
                 stage_two_risk_percent=0.5,
                 stages_cut_profit_percent=2.5,
-                risk_reward_ratio=2,
+                risk_reward_ratio=1.95,
                 starting_balance_for_the_week=192000,
                 break_start_hour=13,
                 break_start_minute=30,

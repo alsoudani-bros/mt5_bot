@@ -55,7 +55,7 @@ def run(wait_callback, callback, **kwargs):
     hours = kwargs.get("hours")
     while True:
         try:
-            if (datetime.now().second == 10 and (datetime.now().minute in minutes and (hours is None or datetime.now().hour in hours))):
+            if (datetime.now().second == 2 and (datetime.now().minute in minutes and (hours is None or datetime.now().hour in hours))):
                 print(datetime.now())
                 callback()
                 sleep(1)
