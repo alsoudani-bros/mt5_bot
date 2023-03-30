@@ -152,6 +152,11 @@ def still_alive():
     pass
 
 def check_market_callback():
+    break_end_hour = 23
+    break_end_minute = 59
+    if symbol == "XAUUSD":
+        break_end_hour = 17
+        break_end_minute = 0
     check_market(symbol=symbol,
                 time_frame="15min",
                 stage_one_risk_percent=0.25,
@@ -161,8 +166,8 @@ def check_market_callback():
                 starting_balance_for_the_week=192000,
                 break_start_hour=13,
                 break_start_minute=30,
-                break_end_hour=23,
-                break_end_minute=59,
+                break_end_hour=break_end_hour,
+                break_end_minute=break_end_minute,
                 max_positions_open_at_once_per_direction=10)
 
 
