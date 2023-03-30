@@ -75,7 +75,9 @@ def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_perc
     if not handlers.break_period(break_start_hour, break_start_minute, break_end_hour, break_end_minute):
         if not handlers.reached_max_loss(starting_balance_for_the_week, current_balance, 4.5):
             if last_candle_close > recent_pivot_high and last_candle_open <= recent_pivot_high:
-                if last_position_pivot_high == recent_pivot_high and last_position_pivot_low == recent_pivot_low and last_position_direction == "long" and handlers.position_still_open(symbol, last_long_position_ticket):
+                previous_long_position_at_same_pivot_high = last_position_pivot_high == recent_pivot_high and handlers.position_still_open(symbol, last_long_position_ticket) and last_position_direction == "long"
+                previous_long_position_has_same_pivot_low = last_position_pivot_low == recent_pivot_low and handlers.position_still_open(symbol, last_long_position_ticket) and last_position_direction == "long"
+                if previous_long_position_at_same_pivot_high or previous_long_position_has_same_pivot_low:
                     handlers.ring('SystemHand')
                     handlers.send_push_notification("Avoid position taking", f"Will not take another position at this pivot high because we already have a position open at this pivot high and the ticket number is {last_long_position_ticket}")
                     print(f"Will not take another position at this pivot high because we already have a position open at this pivot high and the ticket number is {last_long_position_ticket}")
@@ -108,7 +110,9 @@ def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_perc
                         last_long_position_ticket = handlers.get_most_recent_position(symbol).ticket
             
             elif last_candle_close < recent_pivot_low and last_candle_open >= recent_pivot_low:
-                if last_position_pivot_high == recent_pivot_high and last_position_pivot_low == recent_pivot_low and last_position_direction == "short" and handlers.position_still_open(symbol, last_short_position_ticket):
+                previous_short_position_has_same_pivot_high = last_position_pivot_high == recent_pivot_high and handlers.position_still_open(symbol, last_short_position_ticket) and last_position_direction == "short"
+                previous_short_position_at_same_pivot_low = last_position_pivot_low == recent_pivot_low and handlers.position_still_open(symbol, last_short_position_ticket) and last_position_direction == "short"
+                if previous_short_position_has_same_pivot_high or previous_short_position_at_same_pivot_low:
                     handlers.ring('SystemHand')
                     print(f"Will not take another position at this pivot low because we already have a position open at this pivot low and the ticket number is {last_short_position_ticket}")
                     handlers.send_push_notification("Avoid position taking", f"Will not take another position at this pivot low because we already have a position open at this pivot low and the ticket number is {last_short_position_ticket}")
