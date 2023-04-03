@@ -30,10 +30,14 @@ server="FTMO-Server"
 # server = "MetaQuotes-Demo"
 
 def send_push_notification(header, body):
-    push_bullet_access_token = config.get("PUSH_BULLET_ACCESS_TOKEN")
-    pb = PushBullet(push_bullet_access_token)
-    pb.push_note(header, body)
-    print("push notification sent")
+    try:
+        push_bullet_access_token = config.get("PUSH_BULLET_ACCESS_TOKEN")
+        pb = PushBullet(push_bullet_access_token)
+        pb.push_note(header, body)
+        print("push notification sent")
+    except Exception as e:
+        print("push notification failed")
+        print(e)
 
 def establish_MT5_connection(login, server, password):
     now= datetime.now().strftime("%d/%m/%Y %H:%M")
@@ -65,13 +69,8 @@ def run(wait_callback, callback, **kwargs):
                 sleep(.5)
         except Exception as e:
             print(f"some issue in the process happened at {now}")
-            print('Failed market checking ' + str(e))
-            account_info = mt5.terminal_info()
-            status = account_info.connected
-            internet_connection = account_info.ping_last/1000
-            push_notification_header=f"Connection status: {status}"
-            push_notification_body=f"The ping is : {internet_connection}ms Some issues with code execution will reconnect in 1 second {now}"
-            send_push_notification(push_notification_header, push_notification_body)
+            print(e)
+            send_push_notification("Issues In the bot", f"Some issue in the process happened at {now}")
             sleep(1)
             # next line to troubleshoot errors
             # callback()
