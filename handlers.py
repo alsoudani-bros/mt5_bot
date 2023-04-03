@@ -256,21 +256,25 @@ def close_open_position(symbol, ticket_number):
     # return orders
 
 def close_all_open_positions(symbol):
+    total_closed_positions = 0
     now= datetime.now().strftime("%d/%m/%Y %H:%M")
     print(f"Start closing all open positions for the symbol: {symbol}")
     positions = mt5.positions_get(symbol=symbol)
     if len(positions) > 0:
         for position in positions:
             close_open_position(symbol, position.ticket)
+            total_closed_positions += 1
         print(f"All open positions are closed on the symbol: {symbol} time of closing: {now}")
         push_notification_header=f"All open positions closed on {symbol}"
         push_notification_body=f"All open positions are closed on the symbol: {symbol} time of closing: {now}"
         send_push_notification(push_notification_header, push_notification_body)
+        return total_closed_positions
     else:
         print(f"No open positions to close for the symbol: {symbol} time of checking: {now}")
         push_notification_header=f"No Open Positions to close on {symbol}"
         push_notification_body=f"No open positions to close for the symbol: {symbol} time of checking: {now}"
         send_push_notification(push_notification_header, push_notification_body)
+        return total_closed_positions
 
 def close_open_order(ticket_number):
     now= datetime.now().strftime("%d/%m/%Y %H:%M")
@@ -294,34 +298,43 @@ def close_open_order(ticket_number):
         send_push_notification(push_notification_header, push_notification_body)
 
 def close_all_open_orders(symbol):
+    total_closed_orders = 0
     now= datetime.now().strftime("%d/%m/%Y %H:%M")
     print(f"Start closing all open orders for the symbol: {symbol}")
     orders = mt5.orders_get(symbol=symbol)
     if len(orders) > 0:
         for order in orders:
             close_open_order(order.ticket)
+            total_closed_orders += 1
         print(f"All open orders are closed on the symbol: {symbol} time of closing: {now}")
         push_notification_header=f"All open orders closed on {symbol}"
         push_notification_body=f"All open orders are closed on the symbol: {symbol} time of closing: {now}"
         send_push_notification(push_notification_header, push_notification_body)
+        return total_closed_orders
     else:
         print(f"No open orders to close for the symbol: {symbol} time of checking: {now}")
         push_notification_header=f"No Open Orders to close on {symbol}"
         push_notification_body=f"No open orders to close for the symbol: {symbol} time of checking: {now}"
         send_push_notification(push_notification_header, push_notification_body)
+        return total_closed_orders
         
 def manage_pending_orders_depends_on_pivots(symbol, recent_pivot_high, recent_pivot_low):
+    total_closed_orders = 0
     pending_orders = mt5.orders_get(symbol=symbol)
     if len(pending_orders) > 0:
         for order in pending_orders:
             if order.type == 2 and order.price_open < recent_pivot_low:
                 close_open_order(order.ticket)
+                total_closed_orders += 1
             elif order.type == 3 and order.price_open > recent_pivot_high:
                 close_open_order(order.ticket)
+                total_closed_orders += 1
             else:
                 print(f"There are {len(pending_orders)} pending orders for the symbol {symbol} and they are still valid")
+        return total_closed_orders
     else:
         print(f"No available open pending orders for the symbol: {symbol}")
+        return total_closed_orders
 
 def number_of_current_open_positions(symbol, direction):
     positions = mt5.positions_get(symbol=symbol)
@@ -515,8 +528,10 @@ def ring(track_name):
 # x= get_most_recent_position("US100.cash").ticket
 # print(position_still_open("US100.cash", x))
 # print(reached_max_loss(191000, 189000, 1))
-# manage_pending_orders_depends_on_pivots("US100.cash", 12718, 12735)
-# close_all_open_orders("US100.cash")
+# x = manage_pending_orders_depends_on_pivots("US100.cash", 13100, 13000)
+# x +=1
+# print(x)
+# # close_all_open_orders("US100.cash")
 # close_all_open_positions("US100.cash")
 
 # ring('SystemAsterisk')

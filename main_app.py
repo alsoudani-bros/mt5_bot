@@ -17,14 +17,14 @@ from time import sleep
 register_matplotlib_converters()
 config = dotenv_values(".env")
 
-login = config.get("MT_LOGIN")
-password = config.get("MT_PASSWORD")
-# server = "MetaQuotes-Demo"
-server="FTMO-Demo"
+# login = config.get("MT_LOGIN")
+# password = config.get("MT_PASSWORD")
+# # server = "MetaQuotes-Demo"
+# server="FTMO-Demo"
 
-# login = config.get("CHALLANGE_MT_LOGIN")
-# password = config.get("CHALLANGE_MT_PASSWORD")
-# server="FTMO-Server"
+login = config.get("CHALLANGE_MT_LOGIN")
+password = config.get("CHALLANGE_MT_PASSWORD")
+server="FTMO-Server"
 
 handlers.establish_MT5_connection(
     login, server, password)
@@ -34,6 +34,7 @@ last_long_position_ticket = 0
 last_position_pivot_low = 0
 last_short_position_ticket = 0
 last_position_direction = "direction"
+closed_orders_since_last_run = 0
 
 def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_percent, stages_cut_profit_percent, risk_reward_ratio, starting_balance_for_the_week, break_start_hour, break_start_minute, break_end_hour, break_end_minute, max_positions_open_at_once_per_direction):
 
@@ -42,6 +43,7 @@ def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_perc
     global last_position_pivot_low
     global last_short_position_ticket
     global last_position_direction
+    global closed_orders_since_last_run
 
     current_balance = handlers.get_balance()
     net_profit = current_balance - starting_balance_for_the_week
@@ -151,7 +153,8 @@ def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_perc
             handlers.close_all_open_orders(symbol)
             handlers.close_all_open_positions(symbol)
 
-    handlers.manage_pending_orders_depends_on_pivots(symbol, recent_pivot_high, recent_pivot_low)
+    closed_orders_since_last_run += handlers.manage_pending_orders_depends_on_pivots(symbol, recent_pivot_high, recent_pivot_low)
+    handlers.send_push_notification("Total Closed Orders", f"Total closed orders since last run are: {closed_orders_since_last_run} orders")
 
 def still_alive():
     pass
@@ -170,7 +173,7 @@ def check_market_callback():
                 stage_two_risk_percent=0.2,
                 stages_cut_profit_percent=2.5,
                 risk_reward_ratio=risk_reward_ratio,
-                starting_balance_for_the_week=192000,
+                starting_balance_for_the_week=197000,
                 break_start_hour=13,
                 break_start_minute=30,
                 break_end_hour=break_end_hour,
