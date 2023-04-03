@@ -30,7 +30,7 @@ def check_market_callback():
                 stage_two_risk_percent=0.25,
                 stages_cut_profit_percent=2.5,
                 risk_reward_ratio=risk_reward_ratio,
-                starting_balance_for_the_week=197000,
+                starting_balance_for_the_week=189000,
                 break_start_hour=13,
                 break_start_minute=30,
                 break_end_hour=break_end_hour,
