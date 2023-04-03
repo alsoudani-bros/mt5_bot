@@ -154,6 +154,7 @@ def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_perc
             handlers.close_all_open_positions(symbol)
 
     closed_orders_since_last_run += handlers.manage_pending_orders_depends_on_pivots(symbol, recent_pivot_high, recent_pivot_low)
+    print(f"Closed orders since last run: {closed_orders_since_last_run}")
     handlers.send_push_notification("Total Closed Orders", f"Total closed orders since last run are: {closed_orders_since_last_run} orders")
 
 def still_alive():
