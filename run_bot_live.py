@@ -26,8 +26,8 @@ def check_market_callback():
         risk_reward_ratio = 1
     main.check_market(symbol=symbol,
                 time_frame="15min",
-                stage_one_risk_percent=0.25,
-                stage_two_risk_percent=0.5,
+                stage_one_risk_percent=0.125,
+                stage_two_risk_percent=0.25,
                 stages_cut_profit_percent=2.5,
                 risk_reward_ratio=risk_reward_ratio,
                 starting_balance_for_the_week=197000,
