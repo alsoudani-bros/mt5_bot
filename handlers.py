@@ -7,7 +7,6 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import pandas as pd
 from dotenv import dotenv_values
-import repeater
 from pandas.plotting import register_matplotlib_converters
 from scipy.signal import argrelextrema
 import numpy as np
@@ -239,20 +238,6 @@ def close_open_position(symbol, ticket_number):
         push_notification_body=f"Failed to close the position with ticket number: {ticket_number} on the symbol: {symbol} failed to close at: {now}"
         send_push_notification(push_notification_header, push_notification_body)
 
-
-# def get_open_orders():Not useful function
-    # orders_total = mt5.orders_total()
-    # orders = mt5.orders_get()
-    # print(orders)
-    # print(f"Total open orders: {orders_total} orders")
-    # for order in orders:
-        # if order.type == 2:
-        #     print(f"Order Ticket: {order.ticket}\nOrder time: {order.time_setup}\nOrder magic: {order.magic}\nOrder symbol: {order.symbol}\nDirection: Long\nOrder Volume: {order.volume_current}\nOrder entry price: {order.price_open}\nOrder stop loss price: {order.sl}\nOrder take profit price: {order.tp}")
-        # elif order.type == 3:
-        #     print(f"Order Ticket: {order.ticket}\nOrder time: {order.time_setup}\nOrder magic: {order.magic}\nOrder symbol: {order.symbol}\nDirection: Short\nOrder Volume: {order.volume_current}\nOrder entry price: {order.price_open}\nOrder stop loss price: {order.sl}\nOrder take profit price: {order.tp}")
-        # else:
-        #     print(f"Order Ticket: {order.ticket}\nOrder time: {order.time_setup}\nOrder magic: {order.magic}\nOrder symbol: {order.symbol}\nDirection: not coded yet\nOrder Volume: {order.volume_current}\nOrder entry price: {order.price_open}\nOrder stop loss price: {order.sl}\nOrder take profit price: {order.tp}")
-    # return orders
 
 def close_all_open_positions(symbol):
     total_closed_positions = 0
@@ -520,109 +505,3 @@ def ring(track_name):
 # activate next line to run the script and turn it off when you are done
 # establish_MT5_connection(login, server, password)
 
-# positions = mt5.positions_get(symbol="US100.cash")
-# for position in positions:
-#     print(position.type == 1)
-# print(positions)
-# x= get_most_recent_position("US100.cash").ticket
-# print(position_still_open("US100.cash", x))
-# print(reached_max_loss(191000, 189000, 1))
-# x = manage_pending_orders_depends_on_pivots("US100.cash", 13100, 13000)
-# x +=1
-# print(x)
-# # close_all_open_orders("US100.cash")
-# close_all_open_positions("US100.cash")
-
-# ring('SystemAsterisk')
-# ring('SystemExclamation')
-# ring('SystemExit')
-# ring('SystemHand')
-# ring('SystemQuestion')
-
-# def wait_func():
-#     print("Waiting for hope...")
-
-
-# def the_main_func():
-#     print("The main function")
-
-
-# repeater.run(
-#     minutes={15, 30, 45, 0},
-#     callback=the_main_func,
-#     wait_callback=wait_func)
-# long position:  money willing to lose per trade / (entry price - stop price) * contract size
-# short position:  money willing to lose per trade / (stop price - entry price) * contract size
-# get_account_name()
-# get_equity()
-# get_balance()
-# get_profit()
-# get_margin_free()
-# check_connection()
-# get_available_symbols()
-# get_symbol_info('US100.cash')
-# send_order(symbol, direction, type, entry_price, stop_loss_price, risk_reward_ratio, risk_percent)
-# get_open_positions()
-# close_open_position("XAUUSD", 50390019819)
-# get_open_orders()
-# close_open_order(50389969290)
-# open_positions = mt5.positions_get()
-# print(f"Total open positions: {open_positions}")
-# send_market_order("XAUUSD", "long", 1919.00, 1.9, 0.1)
-# send_limit_order("US100.cash", "long", 12200.00, 12150.00, 1.9, 0.1)
-# get_candles_by_date("US100.cash", "15min", "2022,1,1",
-#                     "2023,1,1", r"candles_data\us100\2022_2023_15min_us100.csv")
-# get_candles_by_count("XAUUSD", "15min", 1)
-# get_recent_pivot_high("US100.cash", "15min", 20, 2)
-# get_recent_pivot_low("US100.cash", "15min", 20, 2)
-# within_the_period(5, 0, 13, 0)
-# send_push_notification("test", "test body")
-
-# print(get_candles_by_count("XAUUSD", "15min", 1)['open'][0])
-
-# def something():
-#     pass
-
-# def doit():
-#     get_candles_by_count(symbol=symbol, time_frame="15min", candles_count=1)
-#     print(datetime.now().strftime("%d/%m/%Y %H:%M"))
-
-# symbol = input("input symbol >> ")
-# run(something, doit, minutes={35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59})
-
-
-
-# symbol = "EURUSD"
-# lot = 0.1
-# point = mt5.symbol_info(symbol).point
-# price = mt5.symbol_info_tick(symbol).ask
-# deviation = 20
-# request = {
-#     "action": mt5.TRADE_ACTION_DEAL,
-#     "symbol": symbol,
-#     "volume": lot,
-#     "type": mt5.ORDER_TYPE_BUY,
-#     "price": price,
-#     "sl": price - 100 * point,
-#     "tp": price + 100 * point,
-#     "deviation": deviation,
-#     "magic": 234000,
-#     "comment": "python script open",
-#     "type_time": mt5.ORDER_TIME_GTC,
-#     "type_filling": mt5.ORDER_FILLING_FOK,
-# }
-
-# # send a trading request
-# print(request)
-# result = mt5.order_send(request)
-# print(result)
-# data = "Hello World"
-# price_excution = "long at 1234.56"
- 
-# Send the data by passing the main title
-# and text to be send
-
- 
-# Put a success message after sending
-# the notification
-# put_success("Message sent successfully...")
