@@ -17,14 +17,14 @@ from time import sleep
 register_matplotlib_converters()
 config = dotenv_values(".env")
 
-login = config.get("MT_LOGIN")
-password = config.get("MT_PASSWORD")
-# # server = "MetaQuotes-Demo"
-server="FTMO-Demo"
+# login = config.get("MT_LOGIN")
+# password = config.get("MT_PASSWORD")
+# # # server = "MetaQuotes-Demo"
+# server="FTMO-Demo"
 
-# login = config.get("CHALLANGE_MT_LOGIN")
-# password = config.get("CHALLANGE_MT_PASSWORD")
-# server="FTMO-Server"
+login = config.get("CHALLANGE_MT_LOGIN")
+password = config.get("CHALLANGE_MT_PASSWORD")
+server="FTMO-Server"
 
 handlers.establish_MT5_connection(
     login, server, password)
