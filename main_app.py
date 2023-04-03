@@ -163,14 +163,14 @@ def check_market_callback():
     break_end_hour = 23
     break_end_minute = 59
     risk_reward_ratio = 3
-    if symbol != "Us100.cash":
+    if symbol != "US100.cash":
         break_end_hour = 17
         break_end_minute = 0
         risk_reward_ratio = 1
     check_market(symbol=symbol,
                 time_frame="15min",
-                stage_one_risk_percent=0.1,
-                stage_two_risk_percent=0.2,
+                stage_one_risk_percent=0.25,
+                stage_two_risk_percent=0.5,
                 stages_cut_profit_percent=2.5,
                 risk_reward_ratio=risk_reward_ratio,
                 starting_balance_for_the_week=197000,
