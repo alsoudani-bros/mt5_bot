@@ -81,13 +81,13 @@ def break_period(period_start_hour, period_start_minute, period_end_hour, period
         hour=period_start_hour, minute=period_start_minute)
     end_time = now.replace(hour=period_end_hour,
                            minute=period_end_minute)
-    current_time = now.strftime("%H:%M:%S")
-    print(current_time)
+    # current_time = now.strftime("%H:%M:%S")
+    # print(current_time)
     if now >= start_time and now <= end_time:
         print("Break period no trading")
         return True
     else:
-        print("Trading time")
+        # print("Trading time")
         return False
 
 def news_release_or_weekend(symbol, month, day, hour, minute, reason):
@@ -511,6 +511,7 @@ def ring(track_name):
 # activate next line to run the script and turn it off when you are done
 # establish_MT5_connection(login, server, password)
 
+print(break_period(0, 0, 1, 0))
 # positions = mt5.positions_get(symbol="US100.cash")
 # for position in positions:
 #     print(position.type == 1)

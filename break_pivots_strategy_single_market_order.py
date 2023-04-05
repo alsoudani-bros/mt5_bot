@@ -10,7 +10,7 @@ last_position_direction = "direction"
 # closed_orders_since_last_run = 0
 
 # def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_percent, stages_cut_profit_percent, risk_reward_ratio, starting_balance_for_the_week, break_start_hour, break_start_minute, break_end_hour, break_end_minute, max_positions_open_at_once_per_direction):
-def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_percent, stages_cut_profit_percent, risk_reward_ratio, starting_balance_for_the_week, break_start_hour, break_start_minute, break_end_hour, break_end_minute):
+def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_percent, stages_cut_profit_percent, risk_reward_ratio, starting_balance_for_the_week):
 
     global last_position_pivot_high
     global last_long_position_ticket
@@ -18,6 +18,11 @@ def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_perc
     global last_short_position_ticket
     global last_position_direction
     # global closed_orders_since_last_run
+    
+    newyork_break = handlers.break_period(10,0,23,59)
+    london_break2 = handlers.break_period(3,0,5,30)
+    london_break1 = handlers.break_period(0,0,1,0)
+    close_all_positions_break = handlers.break_period(13,0,14,0)
 
     current_balance = handlers.get_balance()
     net_profit = current_balance - starting_balance_for_the_week
@@ -49,7 +54,7 @@ def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_perc
     last_candle_close = last_candle['close'][0]
     print(f"last candle open: {last_candle_open} and close: {last_candle_close}")
     
-    if not handlers.break_period(break_start_hour, break_start_minute, break_end_hour, break_end_minute):
+    if not london_break and not newyork_break:
         if not handlers.reached_max_loss(starting_balance_for_the_week, current_balance, 4.5):
             if last_candle_close > recent_pivot_high and last_candle_open <= recent_pivot_high:
                 previous_long_position_at_same_pivot_high = last_position_pivot_high == recent_pivot_high and handlers.position_still_open(symbol, last_long_position_ticket) and last_position_direction == "long"
@@ -132,6 +137,8 @@ def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_perc
         else:
             # handlers.close_all_open_orders(symbol)
             handlers.close_all_open_positions(symbol)
+    if close_all_positions_break:
+        handlers.close_all_open_positions(symbol)
 
     # closed_orders_since_last_run += handlers.manage_pending_orders_depends_on_pivots(symbol, recent_pivot_high, recent_pivot_low)
     # print(f"Closed orders since last run: {closed_orders_since_last_run}")
