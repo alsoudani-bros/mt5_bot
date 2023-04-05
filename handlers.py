@@ -511,7 +511,7 @@ def ring(track_name):
 # activate next line to run the script and turn it off when you are done
 # establish_MT5_connection(login, server, password)
 
-print(break_period(0, 0, 1, 0))
+# print(break_period(0, 0, 1, 0))
 # positions = mt5.positions_get(symbol="US100.cash")
 # for position in positions:
 #     print(position.type == 1)

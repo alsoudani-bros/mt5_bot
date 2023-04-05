@@ -54,7 +54,7 @@ def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_perc
     last_candle_close = last_candle['close'][0]
     print(f"last candle open: {last_candle_open} and close: {last_candle_close}")
     
-    if not london_break and not newyork_break:
+    if not london_break1 and not london_break2 and not newyork_break:
         if not handlers.reached_max_loss(starting_balance_for_the_week, current_balance, 4.5):
             if last_candle_close > recent_pivot_high and last_candle_open <= recent_pivot_high:
                 previous_long_position_at_same_pivot_high = last_position_pivot_high == recent_pivot_high and handlers.position_still_open(symbol, last_long_position_ticket) and last_position_direction == "long"
