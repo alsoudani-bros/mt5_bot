@@ -34,8 +34,7 @@ def check_market_callback():
                 break_start_hour=13,
                 break_start_minute=30,
                 break_end_hour=break_end_hour,
-                break_end_minute=break_end_minute,
-                max_positions_open_at_once_per_direction=10)
+                break_end_minute=break_end_minute)
 
 
 symbol= input("Enter the symbol you want to trade: ").strip()

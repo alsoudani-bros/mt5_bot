@@ -9,7 +9,8 @@ last_short_position_ticket = 0
 last_position_direction = "direction"
 # closed_orders_since_last_run = 0
 
-def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_percent, stages_cut_profit_percent, risk_reward_ratio, starting_balance_for_the_week, break_start_hour, break_start_minute, break_end_hour, break_end_minute, max_positions_open_at_once_per_direction):
+# def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_percent, stages_cut_profit_percent, risk_reward_ratio, starting_balance_for_the_week, break_start_hour, break_start_minute, break_end_hour, break_end_minute, max_positions_open_at_once_per_direction):
+def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_percent, stages_cut_profit_percent, risk_reward_ratio, starting_balance_for_the_week, break_start_hour, break_start_minute, break_end_hour, break_end_minute):
 
     global last_position_pivot_high
     global last_long_position_ticket
