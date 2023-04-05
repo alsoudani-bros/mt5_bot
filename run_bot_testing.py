@@ -24,7 +24,7 @@ def check_market_callback():
     if symbol != "US100.cash":
         break_end_hour = 17
         break_end_minute = 0
-        risk_reward_ratio = 1
+        risk_reward_ratio = 2
     main.check_market(symbol=symbol,
                 time_frame="15min",
                 stage_one_risk_percent=0.1,
