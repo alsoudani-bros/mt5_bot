@@ -201,7 +201,7 @@ def get_balance():
     now= datetime.now().strftime("%d/%m/%Y %H:%M")
     balance = mt5.account_info().balance
     print(f"Current Balance is: {balance}$")
-    send_push_notification(f"The Balance as of {now}",f"The current balance is {balance}$")
+    # send_push_notification(f"The Balance as of {now}",f"The current balance is {balance}$")
     return balance
 
 def get_available_symbols():
@@ -396,7 +396,7 @@ def send_market_order(symbol, direction, stop_loss_price, risk_reward_ratio, ris
         print(f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {result.price}\nTime Of Excution: {now}")
         push_notification_header = f"Market order placed {symbol} {direction}"
         push_notification_body = f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {result.price}\nTime Of Excution: {now}"
-        send_push_notification(push_notification_header, push_notification_body)
+        # send_push_notification(push_notification_header, push_notification_body)
         return True
     else:
         ring('SystemHand')
@@ -477,7 +477,7 @@ def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_rewar
         print(f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {entry_price}\nTime Of Execution: {now}")
         push_notification_header = f"Limit order placed {symbol} {direction}"
         push_notification_body = f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {entry_price}\nTime Of Excution: {now}"
-        send_push_notification(push_notification_header, push_notification_body)
+        # send_push_notification(push_notification_header, push_notification_body)
         return True
     else:
         ring('SystemHand')
