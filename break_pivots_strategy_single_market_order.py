@@ -59,7 +59,7 @@ def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_perc
                 previous_long_position_has_same_pivot_low = last_position_pivot_low == recent_pivot_low and handlers.position_still_open(symbol, last_long_position_ticket) and last_position_direction == "long"
                 if previous_long_position_at_same_pivot_high or previous_long_position_has_same_pivot_low:
                     handlers.ring('SystemHand')
-                    handlers.send_push_notification("Avoid position taking", f"Will not take another position at this pivot high because we already have a position open at this pivot high and the ticket number is {last_long_position_ticket}")
+                    # handlers.send_push_notification("Avoid position taking", f"Will not take another position at this pivot high because we already have a position open at this pivot high and the ticket number is {last_long_position_ticket}")
                     print(f"Will not take another position at this pivot high because we already have a position open at this pivot high and the ticket number is {last_long_position_ticket}")
                 else:
                     print("Taking a long position")
@@ -97,7 +97,7 @@ def check_market(symbol, time_frame, stage_one_risk_percent, stage_two_risk_perc
                 previous_short_position_at_same_pivot_low = last_position_pivot_low == recent_pivot_low and handlers.position_still_open(symbol, last_short_position_ticket) and last_position_direction == "short"
                 if previous_short_position_has_same_pivot_high or previous_short_position_at_same_pivot_low:
                     handlers.ring('SystemHand')
-                    print(f"Will not take another position at this pivot low because we already have a position open at this pivot low and the ticket number is {last_short_position_ticket}")
+                    # print(f"Will not take another position at this pivot low because we already have a position open at this pivot low and the ticket number is {last_short_position_ticket}")
                     handlers.send_push_notification("Avoid position taking", f"Will not take another position at this pivot low because we already have a position open at this pivot low and the ticket number is {last_short_position_ticket}")
                 else:
                     print("Taking a short position")
