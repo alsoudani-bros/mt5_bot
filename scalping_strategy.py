@@ -1,21 +1,23 @@
 import handlers
 
+symbol= input("Enter the symbol you want to trade: ").strip()
 last_21_EMA = float(input('Last 21 EMA: '))
 last_50_EMA = float(input('Last 50 EMA: '))
 last_long_position_ticket= 0
 last_short_position_ticket = 0
 
 
-def check_market(symbol, time_frame, risk_percent, risk_reward_ratio, starting_balance_for_the_week):
+def check_market(time_frame, risk_percent, risk_reward_ratio, starting_balance_for_the_week):
 
     
-    time_of_trading = handlers.The_time_of(6,0,9,0,"Trading time")
+    trading_time = handlers.The_time_of(6,0,9,0,"Trading time")
+    global symbol
     global last_21_EMA
     global last_50_EMA
     global last_long_position_ticket
     global last_short_position_ticket
     
-    if time_of_trading:
+    if trading_time:
         current_balance = handlers.get_balance()
                 
         candles = handlers.get_candles_by_count(symbol, time_frame, 5)

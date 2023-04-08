@@ -5,18 +5,18 @@ last_long_position_ticket = 0
 last_position_pivot_low = 0
 last_short_position_ticket = 0
 last_position_direction = "direction"
-
-def check_market(symbol, time_frame, risk_percent, risk_reward_ratio, starting_balance_for_the_week):
-
+symbol= input("Enter the symbol you want to trade: ").strip()
+def check_market(time_frame, risk_percent, risk_reward_ratio, starting_balance_for_the_week):
+    global symbol
     global last_position_pivot_high
     global last_long_position_ticket
     global last_position_pivot_low
     global last_short_position_ticket
     global last_position_direction
     
-    break_of_the_day = handlers.The_time_of(13,0,23,59, "Break Time no trading")
+    Trading_time = handlers.The_time_of(1,0,13,0, "Trading time")
     
-    if not break_of_the_day:
+    if Trading_time:
         current_balance = handlers.get_balance()
         recent_pivot_high = handlers.get_recent_pivot_high(symbol, time_frame, 100, 2)
         recent_pivot_low = handlers.get_recent_pivot_low(symbol, time_frame, 100, 2)
