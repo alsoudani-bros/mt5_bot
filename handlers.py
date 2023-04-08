@@ -75,7 +75,27 @@ def run(wait_callback, callback, **kwargs):
             # next line to troubleshoot errors
             # callback()
 
-def break_period(period_start_hour, period_start_minute, period_end_hour, period_end_minute):
+def run_every_minute(wait_callback, callback):
+    now= datetime.now().strftime("%d/%m/%Y %H:%M")
+    while True:
+        try:
+            if (datetime.now().second == 1 ):
+                print(datetime.now())
+                callback()
+                sleep(1)
+            else:
+                # print(datetime.now())
+                wait_callback()
+                sleep(.5)
+        except Exception as e:
+            print(f"some issue in the process happened at {now}")
+            print(e)
+            send_push_notification("Issues In the bot", f"Some issue in the process happened at {now}")
+            sleep(1)
+            # next line to troubleshoot errors
+            # callback()
+
+def The_time_of(period_start_hour, period_start_minute, period_end_hour, period_end_minute, message):
     now = datetime.now()
     start_time = now.replace(
         hour=period_start_hour, minute=period_start_minute)
@@ -84,7 +104,7 @@ def break_period(period_start_hour, period_start_minute, period_end_hour, period
     # current_time = now.strftime("%H:%M:%S")
     # print(current_time)
     if now >= start_time and now <= end_time:
-        print("Break period no trading")
+        print(f"{message}")
         return True
     else:
         # print("Trading time")
@@ -136,6 +156,8 @@ def get_recent_pivot_low(symbol, time_frame, candles_count, candles_count_on_eac
 def get_candles_by_count(symbol, time_frame, candles_count):
     time_frame = time_frame.strip()
     match time_frame:
+        case "1min":
+            selected_time_frame = mt5.TIMEFRAME_M1
         case "5min":
             selected_time_frame = mt5.TIMEFRAME_M5
         case "15min":
@@ -145,6 +167,7 @@ def get_candles_by_count(symbol, time_frame, candles_count):
         case "1hour":
             selected_time_frame = mt5.TIMEFRAME_H1
     rates = mt5.copy_rates_from_pos(symbol, selected_time_frame, 1, candles_count)
+    rates = np.flip(rates)
     ticks_frame = pd.DataFrame(rates)
     # print(
     #     f"The last {len(rates)} candles received for the symbol {symbol} in the {time_frame} time frame:")
@@ -154,6 +177,8 @@ def get_candles_by_count(symbol, time_frame, candles_count):
 def get_candles_by_date(symbol, time_frame, from_date, to_date, save_to="last_saved_candles.csv"):
     time_frame = time_frame.strip()
     match time_frame:
+        case "1min":
+            selected_time_frame = mt5.TIMEFRAME_M1
         case "5min":
             selected_time_frame = mt5.TIMEFRAME_M5
         case "15min":
@@ -563,13 +588,13 @@ def ring(track_name):
 # send_market_order("XAUUSD", "long", 1919.00, 1.9, 0.1)
 # send_limit_order("US100.cash", "long", 12200.00, 12150.00, 1.9, 0.1)
 # get_candles_by_date("US100.cash", "15min", "2022,1,1", "2023,1,1", r"candles_data\us100\test_2022_2023_15min_us100.csv")
-# get_candles_by_count("XAUUSD", "15min", 1)
+# get_candles_by_count("XAUUSD", "15min", 5)
 # get_recent_pivot_high("US100.cash", "15min", 20, 2)
 # get_recent_pivot_low("US100.cash", "15min", 20, 2)
 # within_the_period(5, 0, 13, 0)
 # send_push_notification("test", "test body")
 
-# print(get_candles_by_count("XAUUSD", "15min", 1)['open'][0])
+# print(get_candles_by_count("US100.cash", "1min", 1))
 
 # def something():
 #     pass
