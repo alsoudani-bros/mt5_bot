@@ -18,8 +18,8 @@ def check_market(time_frame, risk_percent, risk_reward_ratio, starting_balance_f
     
     if Trading_time:
         current_balance = handlers.get_balance()
-        recent_pivot_high = handlers.get_recent_pivot_high(symbol, time_frame, 100, 2)
-        recent_pivot_low = handlers.get_recent_pivot_low(symbol, time_frame, 100, 2)
+        recent_pivot_high = handlers.get_pivot_highs(symbol, time_frame, 100, 2)[0]
+        recent_pivot_low = handlers.get_pivot_lows(symbol, time_frame, 100, 2)[0]
         last_candle = handlers.get_candles_by_count(symbol, time_frame, 1)
         last_candle_open = last_candle['open'][0]
         last_candle_close = last_candle['close'][0]

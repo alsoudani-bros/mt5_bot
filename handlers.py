@@ -20,14 +20,6 @@ from pywebio.session import *
 register_matplotlib_converters()
 config = dotenv_values(".env")
 
-# login = config.get("CHALLANGE_MT_LOGIN")
-# password = config.get("CHALLANGE_MT_PASSWORD")
-# server="FTMO-Server"
-
-# login = config.get("MT_LOGIN")
-# password = config.get("MT_PASSWORD")
-# server="FTMO-Demo"
-# server = "MetaQuotes-Demo"
 
 def send_push_notification(header, body):
     try:
@@ -125,33 +117,27 @@ def news_release_or_weekend(symbol, month, day, hour, minute, reason):
             f"the remaining time for the {reason} on the symbol: {symbol} is {before_news_release - now}")
         return False
 
-def get_recent_pivot_high(symbol, time_frame, candles_count, candles_count_on_each_side):
+def get_pivot_highs(symbol, time_frame, candles_count, candles_count_on_each_side):
+    pivot_highs = []
     candles = get_candles_by_count(symbol, time_frame, candles_count)
     ticks_frame = pd.DataFrame(candles)
     ticks_frame['max'] = ticks_frame.iloc[argrelextrema(
         ticks_frame['close'].values, np.greater, order=candles_count_on_each_side)[0]]['close']
-    candles_start_range = candles_count - candles_count_on_each_side - 1
-    candles_end_range = candles_count_on_each_side
+    for pivot in ticks_frame['max']:
+        if pivot > 0:
+            pivot_highs.append(pivot)
+    return pivot_highs
 
-    for candle_index_under_evaluation in range(candles_start_range, candles_end_range, -1):
-        if ticks_frame['max'][candle_index_under_evaluation] > 0:
-            print(
-                f"The most recent pivot high is {ticks_frame['max'][candle_index_under_evaluation]}")
-            return ticks_frame['max'][candle_index_under_evaluation]
-
-def get_recent_pivot_low(symbol, time_frame, candles_count, candles_count_on_each_side):
+def get_pivot_lows(symbol, time_frame, candles_count, candles_count_on_each_side):
+    pivot_lows = []
     candles = get_candles_by_count(symbol, time_frame, candles_count)
     ticks_frame = pd.DataFrame(candles)
     ticks_frame['min'] = ticks_frame.iloc[argrelextrema(
         ticks_frame['close'].values, np.less, order=candles_count_on_each_side)[0]]['close']
-    candles_start_range = candles_count - candles_count_on_each_side - 1
-    candles_end_range = candles_count_on_each_side
-
-    for candle_index_under_evaluation in range(candles_start_range, candles_end_range, -1):
-        if ticks_frame['min'][candle_index_under_evaluation] > 0:
-            print(
-                f"The most recent pivot low is {ticks_frame['min'][candle_index_under_evaluation]}")
-            return ticks_frame['min'][candle_index_under_evaluation]
+    for pivot in ticks_frame['min']:
+        if pivot > 0:
+            pivot_lows.append(pivot)
+    return pivot_lows
 
 def get_candles_by_count(symbol, time_frame, candles_count):
     time_frame = time_frame.strip()
@@ -534,6 +520,14 @@ def ring(track_name):
 
 # testing..........................................................................
 # activate next line to run the script and turn it off when you are done
+# login = config.get("CHALLANGE_MT_LOGIN")
+# password = config.get("CHALLANGE_MT_PASSWORD")
+# server="FTMO-Server"
+
+# login = config.get("MT_LOGIN")
+# password = config.get("MT_PASSWORD")
+# server="FTMO-Demo"
+# # server = "MetaQuotes-Demo"
 # establish_MT5_connection(login, server, password)
 
 # print(break_period(0, 0, 1, 0))
@@ -589,8 +583,9 @@ def ring(track_name):
 # send_limit_order("US100.cash", "long", 12200.00, 12150.00, 1.9, 0.1)
 # get_candles_by_date("US100.cash", "15min", "2022,1,1", "2023,1,1", r"candles_data\us100\test_2022_2023_15min_us100.csv")
 # get_candles_by_count("XAUUSD", "15min", 5)
-# get_recent_pivot_high("US100.cash", "15min", 20, 2)
-# get_recent_pivot_low("US100.cash", "15min", 20, 2)
+# print(get_pivot_highs("US100.cash", "15min", 100, 2)[0])
+# print(get_pivot_lows("US100.cash", "15min", 100, 2)[0])
+
 # within_the_period(5, 0, 13, 0)
 # send_push_notification("test", "test body")
 
