@@ -6,7 +6,10 @@ last_position_pivot_low = 0.0
 last_short_position_ticket = 0
 last_position_direction = "direction"
 starting_balance = 0.0
+end_of_day_positions_closed = False
 symbol= input("Enter the symbol you want to trade: ").strip()
+
+
 def check_market(time_frame, risk_percent, risk_reward_ratio):
     global symbol
     global last_position_pivot_high
@@ -15,20 +18,21 @@ def check_market(time_frame, risk_percent, risk_reward_ratio):
     global last_short_position_ticket
     global last_position_direction
     global starting_balance
+    global end_of_day_positions_closed
     
     checking_the_balance_time = handlers.The_time_of(5,30,5,55, "Checking the balance")
     trading_time = handlers.The_time_of(6,0,9,0, "Trading time")
     close_positions_time = handlers.The_time_of(13,0,13,20, "Close positions time")
     
-    if checking_the_balance_time:
+    if starting_balance == 0.0 or checking_the_balance_time: 
         starting_balance = handlers.get_balance()
         
-    if close_positions_time:
-        handlers.close_all_open_positions(symbol)
+    if close_positions_time and not end_of_day_positions_closed:
+       if handlers.close_all_open_positions(symbol):
+            end_of_day_positions_closed = True
+            handlers.send_push_notification("Balance Summary", f"Starting of day balance: {starting_balance}$ \n End of day balance: {handlers.get_balance()}$")
         
     if trading_time:
-        if starting_balance == 0.0:
-            starting_balance = handlers.get_balance()
         current_balance = handlers.get_balance()
         recent_pivot_high = handlers.get_pivot_highs(symbol, time_frame, 100, 2)[0]
         recent_pivot_low = handlers.get_pivot_lows(symbol, time_frame, 100, 2)[0]

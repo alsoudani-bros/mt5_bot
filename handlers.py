@@ -33,17 +33,19 @@ def send_push_notification(header, body):
 
 def establish_MT5_connection(login, server, password):
     now= datetime.now().strftime("%d/%m/%Y %H:%M")
-    if not mt5.initialize(login=int(login), server=server, password=password):
-        print("Connection failed............")
-        mt5.shutdown()
-        push_notification_header=f"Connection Failure to MT5"
-        push_notification_body=f"Failed to connect to MT5 {now}"
-        send_push_notification(push_notification_header, push_notification_body)
-    else:
+    if mt5.initialize(login=int(login), server=server, password=password):
         print("Successfully connected.........")
         push_notification_header=f"Connected to MT5"
         push_notification_body=f"Successfully connected to MT5 {now}"
         send_push_notification(push_notification_header, push_notification_body)
+    else:
+        print("Connection failed............")
+        push_notification_header=f"Connection Failure to MT5"
+        push_notification_body=f"Failed to connect to MT5 {now}"
+        send_push_notification(push_notification_header, push_notification_body)
+        print("will try to establish connection again in 5 seconds")
+        sleep(5)
+        establish_MT5_connection(login, server, password)
 
 def run(wait_callback, callback, **kwargs):
     now= datetime.now().strftime("%d/%m/%Y %H:%M")
@@ -255,7 +257,6 @@ def close_open_position(symbol, ticket_number):
         push_notification_body=f"Failed to close the position with ticket number: {ticket_number} on the symbol: {symbol} failed to close at: {now}"
         send_push_notification(push_notification_header, push_notification_body)
 
-
 def close_all_open_positions(symbol):
     total_closed_positions = 0
     now= datetime.now().strftime("%d/%m/%Y %H:%M")
@@ -349,7 +350,6 @@ def number_of_current_open_positions(symbol, direction):
                 if position.type == 1:
                     count += 1
     return count
-                
         
 def send_market_order(symbol, direction, stop_loss_price, risk_reward_ratio, risk_percent):
     now= datetime.now().strftime("%d/%m/%Y %H:%M")
