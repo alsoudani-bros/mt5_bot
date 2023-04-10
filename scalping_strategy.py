@@ -10,7 +10,7 @@ last_short_position_ticket = 0
 def check_market(time_frame, risk_percent, risk_reward_ratio, starting_balance_for_the_week):
 
     
-    trading_time = handlers.The_time_of(6,0,9,0,"Trading time")
+    trading_time = handlers.The_time_of(6,0,21,0,"Trading time")
     global symbol
     global last_21_EMA
     global last_50_EMA
@@ -37,8 +37,8 @@ def check_market(time_frame, risk_percent, risk_reward_ratio, starting_balance_f
         # fourth_candle_close = candles['close'][3]
         # fifth_candle_close = candles['close'][4]
         
-        last_21_EMA = (2/(21+1)) * (last_candle_close - last_21_EMA) + (last_21_EMA)
-        last_50_EMA = (2/(50+1)) * (last_candle_close - last_50_EMA) + (last_50_EMA)
+        last_21_EMA = round((2/(21+1)) * (last_candle_close - last_21_EMA) + (last_21_EMA),2)
+        last_50_EMA = round((2/(50+1)) * (last_candle_close - last_50_EMA) + (last_50_EMA),2)
         there_is_open_long_position = handlers.position_still_open(symbol, last_long_position_ticket)
         there_is_open_short_position = handlers.position_still_open(symbol, last_short_position_ticket)
         # past_candles_close_above_21_EMA = second_candle_close > last_21_EMA and third_candle_close > last_21_EMA and fourth_candle_close > last_21_EMA and fifth_candle_close > last_21_EMA
@@ -50,7 +50,8 @@ def check_market(time_frame, risk_percent, risk_reward_ratio, starting_balance_f
         
         stop_loss = last_50_EMA
         if not handlers.reached_max_loss(starting_balance_for_the_week, current_balance, 4.5):
-        
+            print(f"long side \n last_21_EMA > last_50_EMA: {last_21_EMA > last_50_EMA} \n and last_candle_low < last_21_EMA: {last_candle_low < last_21_EMA} \n and last_candle_close > last_50_EMA: {last_candle_close > last_50_EMA} \n and last_candle_close > last_21_EMA: {last_candle_close > last_21_EMA} \n and last_candle_close > last_candle_open: {last_candle_close > last_candle_open} \n and not there_is_open_long_position: {not there_is_open_long_position} \n and higher_lows: {higher_lows}")
+            print(f"short side \n last_21_EMA < last_50_EMA: {last_21_EMA < last_50_EMA} \n and last_candle_high > last_21_EMA: {last_candle_high > last_21_EMA} \n and last_candle_close < last_50_EMA: {last_candle_close < last_50_EMA} \n and last_candle_close < last_21_EMA: {last_candle_close < last_21_EMA} \n and last_candle_close < last_candle_open: {last_candle_close < last_candle_open} \n and not there_is_open_short_position: {not there_is_open_short_position} \n and lower_highs: {lower_highs}")
             if last_21_EMA > last_50_EMA and last_candle_low < last_21_EMA and last_candle_close > last_50_EMA and last_candle_close > last_21_EMA and last_candle_close > last_candle_open and not there_is_open_long_position and higher_lows:
                 print("Taking a long position")
                 handlers.ring('SystemHand')
