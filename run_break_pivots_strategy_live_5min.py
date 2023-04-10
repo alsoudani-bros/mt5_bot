@@ -15,12 +15,11 @@ def still_alive():
     
 def check_market_callback():
     break_pivots_strategy_single_market_order.check_market(
-                time_frame="15min",
+                time_frame="5min",
                 risk_percent=0.25,
-                risk_reward_ratio=3,
-                starting_balance_for_the_week=200000)
+                risk_reward_ratio=4.5)
                 
 handlers.run(
-    minutes={15, 30, 45, 0},
+    minutes={0,5,10,15,20,25,30,35,40,45,50,55},
     callback=check_market_callback,
     wait_callback=still_alive)

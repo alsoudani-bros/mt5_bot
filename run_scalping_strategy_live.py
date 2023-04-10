@@ -14,10 +14,10 @@ def still_alive():
 
 def check_market_callback():
     scalping_strategy.check_market(
-                time_frame="1min",
+                time_frame="5min",
                 risk_percent=0.25,
-                risk_reward_ratio=1,
-                starting_balance_for_the_week=200000)
+                risk_reward_ratio=5,
+                starting_balance_for_the_week=185000)
 
 handlers.run_every_minute(
     callback=check_market_callback,

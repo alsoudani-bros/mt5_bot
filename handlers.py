@@ -259,22 +259,21 @@ def close_open_position(symbol, ticket_number):
 def close_all_open_positions(symbol):
     total_closed_positions = 0
     now= datetime.now().strftime("%d/%m/%Y %H:%M")
-    print(f"Start closing all open positions for the symbol: {symbol}")
     positions = mt5.positions_get(symbol=symbol)
     if len(positions) > 0:
         for position in positions:
             close_open_position(symbol, position.ticket)
             total_closed_positions += 1
         print(f"All open positions are closed on the symbol: {symbol} time of closing: {now}")
-        push_notification_header=f"All open positions closed on {symbol}"
-        push_notification_body=f"All open positions are closed on the symbol: {symbol} time of closing: {now}"
+        # push_notification_header=f"All open positions closed on {symbol}"
+        # push_notification_body=f"All open positions are closed on the symbol: {symbol} time of closing: {now}"
         # send_push_notification(push_notification_header, push_notification_body)
         return total_closed_positions
     else:
         print(f"No open positions to close for the symbol: {symbol} time of checking: {now}")
-        push_notification_header=f"No Open Positions to close on {symbol}"
-        push_notification_body=f"No open positions to close for the symbol: {symbol} time of checking: {now}"
-        send_push_notification(push_notification_header, push_notification_body)
+        # push_notification_header=f"No Open Positions to close on {symbol}"
+        # push_notification_body=f"No open positions to close for the symbol: {symbol} time of checking: {now}"
+        # send_push_notification(push_notification_header, push_notification_body)
         return total_closed_positions
 
 def close_open_order(ticket_number):

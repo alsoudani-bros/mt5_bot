@@ -10,7 +10,7 @@ last_short_position_ticket = 0
 def check_market(time_frame, risk_percent, risk_reward_ratio, starting_balance_for_the_week):
 
     
-    trading_time = handlers.The_time_of(6,0,21,0,"Trading time")
+    trading_time = handlers.The_time_of(6,0,9,0,"Trading time")
     global symbol
     global last_21_EMA
     global last_50_EMA
