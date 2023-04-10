@@ -265,15 +265,15 @@ def close_all_open_positions(symbol):
             close_open_position(symbol, position.ticket)
             total_closed_positions += 1
         print(f"All open positions are closed on the symbol: {symbol} time of closing: {now}")
-        # push_notification_header=f"All open positions closed on {symbol}"
-        # push_notification_body=f"All open positions are closed on the symbol: {symbol} time of closing: {now}"
-        # send_push_notification(push_notification_header, push_notification_body)
+        push_notification_header=f"All open positions closed on {symbol}"
+        push_notification_body=f"All open positions are closed on the symbol: {symbol} time of closing: {now}"
+        send_push_notification(push_notification_header, push_notification_body)
         return total_closed_positions
     else:
         print(f"No open positions to close for the symbol: {symbol} time of checking: {now}")
-        # push_notification_header=f"No Open Positions to close on {symbol}"
-        # push_notification_body=f"No open positions to close for the symbol: {symbol} time of checking: {now}"
-        # send_push_notification(push_notification_header, push_notification_body)
+        push_notification_header=f"No Open Positions to close on {symbol}"
+        push_notification_body=f"No open positions to close for the symbol: {symbol} time of checking: {now}"
+        send_push_notification(push_notification_header, push_notification_body)
         return total_closed_positions
 
 def close_open_order(ticket_number):
@@ -406,7 +406,7 @@ def send_market_order(symbol, direction, stop_loss_price, risk_reward_ratio, ris
         print(f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {result.price}\nTime Of Excution: {now}")
         push_notification_header = f"Market order placed {symbol} {direction}"
         push_notification_body = f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {result.price}\nTime Of Excution: {now}"
-        # send_push_notification(push_notification_header, push_notification_body)
+        send_push_notification(push_notification_header, push_notification_body)
         return True
     else:
         ring('SystemHand')
@@ -487,7 +487,7 @@ def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_rewar
         print(f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {entry_price}\nTime Of Execution: {now}")
         push_notification_header = f"Limit order placed {symbol} {direction}"
         push_notification_body = f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {entry_price}\nTime Of Excution: {now}"
-        # send_push_notification(push_notification_header, push_notification_body)
+        send_push_notification(push_notification_header, push_notification_body)
         return True
     else:
         ring('SystemHand')
