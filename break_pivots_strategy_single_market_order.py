@@ -27,6 +27,8 @@ def check_market(time_frame, risk_percent, risk_reward_ratio):
         handlers.close_all_open_positions(symbol)
         
     if trading_time:
+        if starting_balance <= 0:
+            starting_balance = handlers.get_balance()
         current_balance = handlers.get_balance()
         recent_pivot_high = handlers.get_pivot_highs(symbol, time_frame, 100, 2)[0]
         recent_pivot_low = handlers.get_pivot_lows(symbol, time_frame, 100, 2)[0]
