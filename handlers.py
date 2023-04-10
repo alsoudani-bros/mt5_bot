@@ -268,7 +268,7 @@ def close_all_open_positions(symbol):
         print(f"All open positions are closed on the symbol: {symbol} time of closing: {now}")
         push_notification_header=f"All open positions closed on {symbol}"
         push_notification_body=f"All open positions are closed on the symbol: {symbol} time of closing: {now}"
-        send_push_notification(push_notification_header, push_notification_body)
+        # send_push_notification(push_notification_header, push_notification_body)
         return total_closed_positions
     else:
         print(f"No open positions to close for the symbol: {symbol} time of checking: {now}")
