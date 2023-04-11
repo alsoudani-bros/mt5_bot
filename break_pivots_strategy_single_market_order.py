@@ -20,9 +20,9 @@ def check_market(time_frame, risk_percent, risk_reward_ratio):
     global starting_balance
     global end_of_day_positions_closed
     
-    checking_the_balance_time = handlers.The_time_of(5,30,5,55, "Checking the balance")
-    trading_time = handlers.The_time_of(6,0,9,0, "Trading time")
-    close_positions_time = handlers.The_time_of(13,0,13,20, "Close positions time")
+    checking_the_balance_time = handlers.The_time_of(17,0,17,20, "Checking the balance")
+    break_time = handlers.The_time_of(13,0,17,30, "Break time")
+    close_positions_time = handlers.The_time_of(13,0,13,30, "Close positions time")
     
     if starting_balance == 0.0 or checking_the_balance_time: 
         starting_balance = handlers.get_balance()
@@ -32,7 +32,8 @@ def check_market(time_frame, risk_percent, risk_reward_ratio):
             end_of_day_positions_closed = True
             handlers.send_push_notification("Balance Summary", f"Starting of day balance: {starting_balance}$ \n End of day balance: {handlers.get_balance()}$")
         
-    if trading_time:
+    if not break_time:
+        end_of_day_positions_closed = False
         current_balance = handlers.get_balance()
         recent_pivot_high = handlers.get_pivot_highs(symbol, time_frame, 100, 2)[0]
         recent_pivot_low = handlers.get_pivot_lows(symbol, time_frame, 100, 2)[0]
