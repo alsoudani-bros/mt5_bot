@@ -353,11 +353,8 @@ def number_of_current_open_positions(symbol, direction):
         
 def send_market_order(symbol, direction, stop_loss_price, risk_reward_ratio, risk_percent):
     now= datetime.now().strftime("%d/%m/%Y %H:%M")
-    market_price = mt5.symbol_info_tick(symbol).ask
     random_id = random.randint(100000000, 999999999)
     money_to_risk = get_balance() * risk_percent/100
-    distance_from_stop_loss = abs(market_price - stop_loss_price)
-    distance_from_take_profit = distance_from_stop_loss * risk_reward_ratio
     if symbol == "US100.cash":
         lot_size = round(money_to_risk/distance_from_stop_loss, 2)
     elif symbol == "XAUUSD":
@@ -370,12 +367,15 @@ def send_market_order(symbol, direction, stop_loss_price, risk_reward_ratio, ris
                          (distance_from_stop_loss * 10000), 2)
     deviation = 100
     if direction == "long":
+        market_price = mt5.symbol_info_tick(symbol).ask
+        distance_from_stop_loss = abs(market_price - stop_loss_price)
+        distance_from_take_profit = distance_from_stop_loss * risk_reward_ratio
         request = {
             "action": mt5.TRADE_ACTION_DEAL,
             "symbol": symbol,
             "volume": lot_size,
             "type": mt5.ORDER_TYPE_BUY,
-            "price": mt5.symbol_info_tick(symbol).ask,
+            "price": market_price,
             "sl": stop_loss_price,
             "tp": round(market_price + distance_from_take_profit, 2),
             "deviation": deviation,
@@ -385,12 +385,15 @@ def send_market_order(symbol, direction, stop_loss_price, risk_reward_ratio, ris
             "type_filling": mt5.ORDER_FILLING_FOK
         }
     elif direction == "short":
+        market_price = mt5.symbol_info_tick(symbol).bid
+        distance_from_stop_loss = abs(market_price - stop_loss_price)
+        distance_from_take_profit = distance_from_stop_loss * risk_reward_ratio
         request = {
             "action": mt5.TRADE_ACTION_DEAL,
             "symbol": symbol,
             "volume": lot_size,
             "type": mt5.ORDER_TYPE_SELL,
-            "price": mt5.symbol_info_tick(symbol).bid,
+            "price": market_price,
             "sl": stop_loss_price,
             "tp": round(market_price - distance_from_take_profit, 2),
             "deviation": deviation,
@@ -581,7 +584,7 @@ def ring(track_name):
 # send_market_order("XAUUSD", "long", 1919.00, 1.9, 0.1)
 # send_limit_order("US100.cash", "long", 12200.00, 12150.00, 1.9, 0.1)
 # get_candles_by_date("US100.cash", "15min", "2022,1,1", "2023,1,1", r"candles_data\us100\test_2022_2023_15min_us100.csv")
-# get_candles_by_count("XAUUSD", "15min", 5)
+# print(get_candles_by_count("US100.cash", "15min", 5)['spread'])
 # print(get_pivot_highs("US100.cash", "15min", 100, 2)[0])
 # print(get_pivot_lows("US100.cash", "15min", 100, 2)[0])
 
