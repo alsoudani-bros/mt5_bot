@@ -355,21 +355,21 @@ def send_market_order(symbol, direction, stop_loss_price, risk_reward_ratio, ris
     now= datetime.now().strftime("%d/%m/%Y %H:%M")
     random_id = random.randint(100000000, 999999999)
     money_to_risk = get_balance() * risk_percent/100
-    if symbol == "US100.cash":
-        lot_size = round(money_to_risk/distance_from_stop_loss, 2)
-    elif symbol == "XAUUSD":
-        lot_size = round(money_to_risk/(distance_from_stop_loss * 100), 2)
-    elif symbol == "GBPJPY":
-        lot_size = round(money_to_risk * 0.132 /
-                         (distance_from_stop_loss * 100), 2)
-    elif symbol == "EURUSD":
-        lot_size = round(money_to_risk * 0.1 /
-                         (distance_from_stop_loss * 10000), 2)
     deviation = 100
     if direction == "long":
         market_price = mt5.symbol_info_tick(symbol).ask
         distance_from_stop_loss = abs(market_price - stop_loss_price)
         distance_from_take_profit = distance_from_stop_loss * risk_reward_ratio
+        if symbol == "US100.cash":
+            lot_size = round(money_to_risk/distance_from_stop_loss, 2)
+        elif symbol == "XAUUSD":
+            lot_size = round(money_to_risk/(distance_from_stop_loss * 100), 2)
+        elif symbol == "GBPJPY":
+            lot_size = round(money_to_risk * 0.132 /
+                            (distance_from_stop_loss * 100), 2)
+        elif symbol == "EURUSD":
+            lot_size = round(money_to_risk * 0.1 /
+                            (distance_from_stop_loss * 10000), 2)
         request = {
             "action": mt5.TRADE_ACTION_DEAL,
             "symbol": symbol,
@@ -388,6 +388,16 @@ def send_market_order(symbol, direction, stop_loss_price, risk_reward_ratio, ris
         market_price = mt5.symbol_info_tick(symbol).bid
         distance_from_stop_loss = abs(market_price - stop_loss_price)
         distance_from_take_profit = distance_from_stop_loss * risk_reward_ratio
+        if symbol == "US100.cash":
+            lot_size = round(money_to_risk/distance_from_stop_loss, 2)
+        elif symbol == "XAUUSD":
+            lot_size = round(money_to_risk/(distance_from_stop_loss * 100), 2)
+        elif symbol == "GBPJPY":
+            lot_size = round(money_to_risk * 0.132 /
+                            (distance_from_stop_loss * 100), 2)
+        elif symbol == "EURUSD":
+            lot_size = round(money_to_risk * 0.1 /
+                            (distance_from_stop_loss * 10000), 2)
         request = {
             "action": mt5.TRADE_ACTION_DEAL,
             "symbol": symbol,
