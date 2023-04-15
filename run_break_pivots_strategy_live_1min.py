@@ -17,7 +17,11 @@ def check_market_callback():
     break_pivots_strategy_single_market_order.check_market(
                 time_frame="1min",
                 risk_percent=0.05,
-                risk_reward_ratio=1.1)
+                risk_reward_ratio=1.1,
+                start_break_hour=13,
+                start_break_minute=30,
+                end_break_hour=17,
+                end_break_minute=0)
                 
 handlers.run_every_minute(
     callback=check_market_callback,

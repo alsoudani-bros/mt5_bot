@@ -10,7 +10,7 @@ end_of_day_positions_closed = False
 symbol= input("Enter the symbol you want to trade: ").strip()
 
 
-def check_market(time_frame, risk_percent, risk_reward_ratio):
+def check_market(time_frame, risk_percent, risk_reward_ratio,start_break_hour, start_break_minute, end_break_hour, end_break_minute):
     global symbol
     global last_position_pivot_high
     global last_long_position_ticket
@@ -20,17 +20,16 @@ def check_market(time_frame, risk_percent, risk_reward_ratio):
     global starting_balance
     global end_of_day_positions_closed
     
-    checking_the_balance_time = handlers.The_time_of(17,0,17,20, "Checking the balance")
-    break_time = handlers.The_time_of(13,0,17,30, "Break time")
-    close_positions_time = handlers.The_time_of(13,0,13,30, "Close positions time")
+    break_time = handlers.The_time_of(start_break_hour,start_break_minute,end_break_hour,end_break_minute, "Break time")
     
-    if starting_balance == 0.0 or checking_the_balance_time: 
-        starting_balance = handlers.get_balance()
-        
-    if close_positions_time and not end_of_day_positions_closed:
+    if break_time and not end_of_day_positions_closed:
        if handlers.close_all_open_positions(symbol):
             end_of_day_positions_closed = True
             handlers.send_push_notification("Balance Summary", f"Starting of day balance: {starting_balance}$ \n End of day balance: {handlers.get_balance()}$")
+            
+    if starting_balance == 0.0 or break_time: 
+        starting_balance = handlers.get_balance()
+        
         
     if not break_time:
         end_of_day_positions_closed = False
