@@ -3,7 +3,6 @@ import pprint
 import pytz
 import datetime
 import MetaTrader5 as mt5
-from datetime import datetime
 import matplotlib.pyplot as plt
 import pandas as pd
 from dotenv import dotenv_values
@@ -32,7 +31,7 @@ def send_push_notification(header, body):
         print(e)
 
 def establish_MT5_connection(login, server, password):
-    now= datetime.now().strftime("%d/%m/%Y %H:%M")
+    now= datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
     if mt5.initialize(login=int(login), server=server, password=password):
         print("Successfully connected.........")
         push_notification_header=f"Connected to MT5"
@@ -48,17 +47,17 @@ def establish_MT5_connection(login, server, password):
         establish_MT5_connection(login, server, password)
 
 def run(wait_callback, callback, **kwargs):
-    now= datetime.now().strftime("%d/%m/%Y %H:%M")
+    now= datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
     minutes = kwargs.get("minutes", {0})
     hours = kwargs.get("hours")
     while True:
         try:
-            if (datetime.now().second == 2 and (datetime.now().minute in minutes and (hours is None or datetime.now().hour in hours))):
-                print(datetime.now())
+            if (datetime.datetime.now().second == 2 and (datetime.datetime.now().minute in minutes and (hours is None or datetime.datetime.now().hour in hours))):
+                print(datetime.datetime.now())
                 callback()
                 sleep(1)
             else:
-                # print(datetime.now())
+                # print(datetime.datetime.now())
                 wait_callback()
                 sleep(.5)
         except Exception as e:
@@ -70,15 +69,15 @@ def run(wait_callback, callback, **kwargs):
             # callback()
 
 def run_every_minute(wait_callback, callback):
-    now= datetime.now().strftime("%d/%m/%Y %H:%M")
+    now= datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
     while True:
         try:
-            if (datetime.now().second == 1 ):
-                print(datetime.now())
+            if (datetime.datetime.now().second == 1 ):
+                print(datetime.datetime.now())
                 callback()
                 sleep(1)
             else:
-                # print(datetime.now())
+                # print(datetime.datetime.now())
                 wait_callback()
                 sleep(.5)
         except Exception as e:
@@ -90,7 +89,7 @@ def run_every_minute(wait_callback, callback):
             # callback()
 
 def The_time_of(period_start_hour, period_start_minute, period_end_hour, period_end_minute, message):
-    now = datetime.now()
+    now = datetime.datetime.now()
     start_time = now.replace(
         hour=period_start_hour, minute=period_start_minute)
     end_time = now.replace(hour=period_end_hour,
@@ -105,7 +104,7 @@ def The_time_of(period_start_hour, period_start_minute, period_end_hour, period_
         return False
 
 def news_release_or_weekend(symbol, month, day, hour, minute, reason):
-    now = datetime.now()
+    now = datetime.datetime.now()
     news_release_time = now.replace(
         month=month, day=day, hour=hour, minute=minute)
     before_news_release = news_release_time - datetime.timedelta(minutes=5)
@@ -211,7 +210,7 @@ def get_candles_by_date(symbol, time_frame, from_date, to_date, save_to="last_sa
     return rates
 
 def get_balance():
-    now= datetime.now().strftime("%d/%m/%Y %H:%M")
+    now= datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
     balance = mt5.account_info().balance
     print(f"Current Balance is: {balance}$")
     # send_push_notification(f"The Balance as of {now}",f"The current balance is {balance}$")
@@ -240,7 +239,7 @@ def get_symbol_info(symbol):
     return name, spread, pip_size, contract_size
 
 def close_open_position(symbol, ticket_number):
-    now= datetime.now().strftime("%d/%m/%Y %H:%M")
+    now= datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
     result = mt5.Close(symbol, ticket=ticket_number)
     if result:
         ring('SystemAsterisk')
@@ -259,7 +258,7 @@ def close_open_position(symbol, ticket_number):
 
 def close_all_open_positions(symbol):
     total_closed_positions = 0
-    now= datetime.now().strftime("%d/%m/%Y %H:%M")
+    now= datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
     positions = mt5.positions_get(symbol=symbol)
     if len(positions) > 0:
         for position in positions:
@@ -278,7 +277,7 @@ def close_all_open_positions(symbol):
         return total_closed_positions
 
 def close_open_order(ticket_number):
-    now= datetime.now().strftime("%d/%m/%Y %H:%M")
+    now= datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
     request = {
         "action": mt5.TRADE_ACTION_REMOVE,
         "order": ticket_number
@@ -300,7 +299,7 @@ def close_open_order(ticket_number):
 
 def close_all_open_orders(symbol):
     total_closed_orders = 0
-    now= datetime.now().strftime("%d/%m/%Y %H:%M")
+    now= datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
     print(f"Start closing all open orders for the symbol: {symbol}")
     orders = mt5.orders_get(symbol=symbol)
     if len(orders) > 0:
@@ -352,7 +351,7 @@ def number_of_current_open_positions(symbol, direction):
     return count
         
 def send_market_order(symbol, direction, stop_loss_price, risk_reward_ratio, risk_percent):
-    now= datetime.now().strftime("%d/%m/%Y %H:%M")
+    now= datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
     random_id = random.randint(100000000, 999999999)
     money_to_risk = get_balance() * risk_percent/100
     deviation = 100
@@ -448,7 +447,7 @@ def get_most_recent_position(symbol):
         return None
 
 def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_reward_ratio, risk_percent):
-    now= datetime.now().strftime("%d/%m/%Y %H:%M")
+    now= datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
     random_id = random.randint(100000000, 999999999)
     money_to_risk = get_balance() * risk_percent/100
     distance_from_stop_loss = abs(entry_price - stop_loss_price)
@@ -498,9 +497,9 @@ def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_rewar
     if result.retcode == 10009:
         ring('SystemAsterisk')
         print(f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {entry_price}\nTime Of Execution: {now}")
-        push_notification_header = f"Limit order placed {symbol} {direction}"
-        push_notification_body = f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {entry_price}\nTime Of Excution: {now}"
-        send_push_notification(push_notification_header, push_notification_body)
+        # push_notification_header = f"Limit order placed {symbol} {direction}"
+        # push_notification_body = f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {entry_price}\nTime Of Execution: {now}"
+        # send_push_notification(push_notification_header, push_notification_body)
         return True
     else:
         ring('SystemHand')
@@ -512,7 +511,7 @@ def send_limit_order(symbol, direction, entry_price, stop_loss_price, risk_rewar
         return False
 
 def reached_max_loss(starting_balance, current_balance, max_loss_percentage):
-    now= datetime.now().strftime("%d/%m/%Y %H:%M")
+    now= datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
     max_loss = starting_balance * max_loss_percentage/100
     if starting_balance - current_balance > max_loss:
         print(f"Reached max loss of {starting_balance - current_balance}$ which is more than {max_loss}$")
@@ -528,7 +527,50 @@ def ring(track_name):
         track_name, winsound.SND_ALIAS])
     soundProcess.start()
 
-
+def is_weekend_break():
+    is_friday = datetime.datetime.now().strftime('%A') == "Friday"
+    is_saturday = datetime.datetime.now().strftime('%A') == "Saturday"
+    is_sunday = datetime.datetime.now().strftime('%A') == "Sunday"
+    if is_saturday:
+        print("It is Saturday No trading today")
+        return True
+    elif is_friday:
+        friday_break_hours = [14,15,16,17,18,19,20,21,22,23]
+        is_break = False
+        for hour in friday_break_hours:
+            if datetime.datetime.now().hour == hour:
+                is_break = True
+                break
+        if is_break:
+            print("It is Friday break hours No trading today")
+            return True
+        else:
+            return False
+    elif is_sunday:
+        sunday_break_hours = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+        is_break= False
+        for hour in sunday_break_hours:
+            if datetime.datetime.now().hour == hour:
+                is_break = True
+                break
+        if is_break:
+            print("It is Sunday break hours No trading today")
+            return True
+        else:
+            return False
+    else:
+        return False
+    
+def get_report(last_checked_time, minutes):
+    time_now = datetime.datetime.now()
+    time_since_last_report = (time_now - last_checked_time).total_seconds() / 60
+    ping = mt5.terminal_info().ping_last/1000
+    account_info= mt5.account_info()
+    if time_since_last_report >= minutes:
+        send_push_notification(f"{minutes} minutes Report...",f"Report time: {time_now.strftime('%d/%m/%Y %H:%M')}\n Last ping: {ping} ms\n Account name: {account_info.name}\n Last balance: {account_info.balance}$")
+        return True
+    else:
+        return False
 
 # testing..........................................................................
 # activate next line to run the script and turn it off when you are done
@@ -608,7 +650,7 @@ def ring(track_name):
 
 # def doit():
 #     get_candles_by_count(symbol=symbol, time_frame="15min", candles_count=1)
-#     print(datetime.now().strftime("%d/%m/%Y %H:%M"))
+#     print(datetime.datetime.now().strftime("%d/%m/%Y %H:%M"))
 
 # symbol = input("input symbol >> ")
 # run(something, doit, minutes={35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59})
@@ -649,3 +691,10 @@ def ring(track_name):
 # Put a success message after sending
 # the notification
 # put_success("Message sent successfully...")
+
+    
+# is_weekend_break()
+
+# x = datetime.datetime.now()- datetime.timedelta(hours=1)
+# print(x)
+# get_report(x, 30)
