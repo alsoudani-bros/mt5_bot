@@ -245,9 +245,9 @@ def close_open_position(symbol, ticket_number):
         ring('SystemAsterisk')
         print(
             f"Successfully closed the position with ticket number: {ticket_number} on the symbol: {symbol} time of closing: {now}")
-        push_notification_header=f"Close Open Position on {symbol}"
-        push_notification_body=f"Successfully closed the position with ticket number: {ticket_number} on the symbol: {symbol} time of closing: {now}"
-        send_push_notification(push_notification_header, push_notification_body)
+        # push_notification_header=f"Close Open Position on {symbol}"
+        # push_notification_body=f"Successfully closed the position with ticket number: {ticket_number} on the symbol: {symbol} time of closing: {now}"
+        # send_push_notification(push_notification_header, push_notification_body)
     else:
         ring('SystemHand')
         print(
@@ -416,9 +416,9 @@ def send_market_order(symbol, direction, stop_loss_price, risk_reward_ratio, ris
     if result.retcode == 10009:
         ring('SystemAsterisk')
         print(f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {result.price}\nTime Of Excution: {now}")
-        push_notification_header = f"Market order placed {symbol} {direction}"
-        push_notification_body = f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {result.price}\nTime Of Excution: {now}"
-        send_push_notification(push_notification_header, push_notification_body)
+        # push_notification_header = f"Market order placed {symbol} {direction}"
+        # push_notification_body = f"{result.comment}\nOrder number: {result.order}\nSymbol: {symbol}\nVolume: {result.volume}\nEntry Price: {result.price}\nTime Of Excution: {now}"
+        # send_push_notification(push_notification_header, push_notification_body)
         return True
     else:
         ring('SystemHand')
