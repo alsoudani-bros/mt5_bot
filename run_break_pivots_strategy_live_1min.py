@@ -20,8 +20,8 @@ def check_market_callback():
                 risk_reward_ratio=1.1,
                 start_break_hour=13,
                 start_break_minute=30,
-                end_break_hour=17,
-                end_break_minute=0)
+                end_break_hour=23,
+                end_break_minute=59)
                 
 handlers.run_every_minute(
     callback=check_market_callback,
