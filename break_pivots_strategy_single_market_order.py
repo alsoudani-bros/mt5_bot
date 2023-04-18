@@ -45,15 +45,13 @@ def check_market(time_frame, risk_percent, risk_reward_ratio,start_break_hour, s
             print(f"last candle open: {last_candle_open} and close: {last_candle_close}")
             
             if not handlers.reached_max_loss(starting_balance, current_balance, 2):
-                last_long_position_has_same_pivot_low = last_position_pivot_low == recent_pivot_low and last_position_direction == "long"
-                last_short_position_has_same_pivot_high = last_position_pivot_high == recent_pivot_high and last_position_direction == "short"
-                last_long_position_has_same_pivot_high = last_position_pivot_high == recent_pivot_high and  last_position_direction == "long"
-                last_short_position_has_same_pivot_low = last_position_pivot_low == recent_pivot_low  and last_position_direction == "short"
                 
-                if last_candle_close > recent_pivot_high and last_candle_low <= recent_pivot_high and last_candle_close > last_candle_open and not (last_long_position_has_same_pivot_high and handlers.position_still_open(symbol, last_long_position_ticket)):
+                there_is_long_position_has_same_pivot_high = last_position_pivot_high == recent_pivot_high and handlers.position_still_open(symbol, last_long_position_ticket) and last_position_direction == "long"
+                there_is_long_position_has_same_pivot_low = last_position_pivot_low == recent_pivot_low and handlers.position_still_open(symbol, last_long_position_ticket) and last_position_direction == "long"
+                there_is_short_position_has_same_pivot_high = last_position_pivot_high == recent_pivot_high and handlers.position_still_open(symbol, last_short_position_ticket) and last_position_direction == "short"
+                there_is_short_position_has_same_pivot_low = last_position_pivot_low == recent_pivot_low and handlers.position_still_open(symbol, last_short_position_ticket) and last_position_direction == "short"
+                if last_candle_close > recent_pivot_high and last_candle_low <= recent_pivot_high and last_candle_close > last_candle_open and not there_is_long_position_has_same_pivot_high and not there_is_long_position_has_same_pivot_low:
                     print("Start taking a long position")
-                    if last_long_position_has_same_pivot_low:
-                        recent_pivot_low = handlers.get_pivot_lows(symbol, time_frame, 100, 1)[0]
                     stop_loss = recent_pivot_low
                     if handlers.send_market_order(symbol, "long", stop_loss, risk_reward_ratio, risk_percent):
                         last_position_pivot_high = recent_pivot_high
@@ -61,10 +59,8 @@ def check_market(time_frame, risk_percent, risk_reward_ratio,start_break_hour, s
                         last_position_direction = "long"
                         last_long_position_ticket = handlers.get_most_recent_position(symbol).ticket
                 
-                elif last_candle_close < recent_pivot_low and last_candle_high >= recent_pivot_low and last_candle_close < last_candle_open and not (last_short_position_has_same_pivot_low and handlers.position_still_open(symbol, last_short_position_ticket)):
+                elif last_candle_close < recent_pivot_low and last_candle_high >= recent_pivot_low and  last_candle_close < last_candle_open and not there_is_short_position_has_same_pivot_high and not there_is_short_position_has_same_pivot_low:
                     print("start taking a short position")
-                    if last_short_position_has_same_pivot_high:
-                        recent_pivot_high = handlers.get_pivot_highs(symbol, time_frame, 100, 1)[0]
                     stop_loss = recent_pivot_high
                     if handlers.send_market_order(symbol, "short", stop_loss, risk_reward_ratio, risk_percent):
                         last_position_pivot_high = recent_pivot_high
