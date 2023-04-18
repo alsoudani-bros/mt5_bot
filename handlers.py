@@ -73,7 +73,7 @@ def run_every_minute(wait_callback, callback):
     while True:
         try:
             if (datetime.datetime.now().second == 1 ):
-                print(datetime.datetime.now())
+                print(f"\n\n Checking market time {datetime.datetime.now()}\n...........................................\n")
                 callback()
                 sleep(1)
             else:
