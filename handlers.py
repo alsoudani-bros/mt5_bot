@@ -53,7 +53,7 @@ def run(wait_callback, callback, **kwargs):
     while True:
         try:
             if (datetime.datetime.now().second == 2 and (datetime.datetime.now().minute in minutes and (hours is None or datetime.datetime.now().hour in hours))):
-                print(f"\n\n Checking market time {datetime.datetime.now()}\n\n")
+                print(f"\n\n Checking market time {datetime.datetime.now()}\n...........................................\n")
                 callback()
                 sleep(1)
             else:
