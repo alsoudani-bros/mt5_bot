@@ -18,10 +18,10 @@ def check_market_callback():
                 time_frame="15min",
                 risk_percent=0.25,
                 risk_reward_ratio=1.1,
-                start_break_hour=13,
-                start_break_minute=0,
-                end_break_hour=17,
-                end_break_minute=30)
+                start_trading_hour=5,
+                start_trading_minute=45,
+                end_trading_hour=12,
+                end_trading_minute=45)
                 
 handlers.run(
     minutes={15, 30, 45, 0},

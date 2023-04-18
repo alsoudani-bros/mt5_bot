@@ -9,7 +9,7 @@ starting_balance = 0.0
 last_report_time = datetime.datetime.now()
 symbol= input("Enter the symbol you want to trade: ").strip()
 
-def check_market(time_frame, risk_percent, risk_reward_ratio,start_break_hour, start_break_minute, end_break_hour, end_break_minute):
+def check_market(time_frame, risk_percent, risk_reward_ratio,start_trading_hour, start_trading_minute, end_trading_hour, end_trading_minute):
     global symbol
     global last_long_position_pivot_high
     global last_long_position_ticket
@@ -19,16 +19,16 @@ def check_market(time_frame, risk_percent, risk_reward_ratio,start_break_hour, s
     global last_report_time
         
     if not handlers.is_weekend_break():
-        break_time = handlers.The_time_of(start_break_hour,start_break_minute,end_break_hour,end_break_minute, "Break time")
+        trading_time = handlers.The_time_of(start_trading_hour,start_trading_minute,end_trading_hour,end_trading_minute, "Trading time")
         
         if handlers.get_report(last_report_time, 60):
             last_report_time = datetime.datetime.now()
                 
-        if starting_balance == 0.0 or break_time: 
+        if starting_balance == 0.0 or not trading_time: 
             starting_balance = handlers.get_balance()
             
             
-        if not break_time:
+        if trading_time:
             if not handlers.position_still_open(symbol, last_long_position_ticket):
                 last_long_position_pivot_high = 0.0
                 last_long_position_ticket = 0
