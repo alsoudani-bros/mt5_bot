@@ -4,9 +4,13 @@ import break_pivots_strategy_single_market_order
 config = dotenv_values(".env")
 
 
-login = config.get("CHALLANGE_MT_LOGIN")
-password = config.get("CHALLANGE_MT_PASSWORD")
-server="FTMO-Server"
+# login = config.get("CHALLANGE_MT_LOGIN")
+# password = config.get("CHALLANGE_MT_PASSWORD")
+# server="FTMO-Server"
+
+login = config.get("MT_LOGIN")
+password = config.get("MT_PASSWORD")
+server="FTMO-Demo"
 
 handlers.establish_MT5_connection(login, server, password)
 
