@@ -68,4 +68,6 @@ def check_market(time_frame, risk_percent, risk_reward_ratio,start_trading_hour,
                             
                 else:
                     print("No conditions met and No position taken")
+        else:
+            handlers.close_all_open_positions(symbol)
         
