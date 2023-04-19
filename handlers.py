@@ -265,15 +265,15 @@ def close_all_open_positions(symbol):
             close_open_position(symbol, position.ticket)
             total_closed_positions += 1
         print(f"All open positions are closed on the symbol: {symbol} time of closing: {now}")
-        push_notification_header=f"All open positions closed on {symbol}"
-        push_notification_body=f"All open positions are closed on the symbol: {symbol} time of closing: {now}"
-        send_push_notification(push_notification_header, push_notification_body)
+        # push_notification_header=f"All open positions closed on {symbol}"
+        # push_notification_body=f"All open positions are closed on the symbol: {symbol} time of closing: {now}"
+        # send_push_notification(push_notification_header, push_notification_body)
         return total_closed_positions
     else:
         print(f"No open positions to close for the symbol: {symbol} time of checking: {now}")
-        push_notification_header=f"No Open Positions to close on {symbol}"
-        push_notification_body=f"No open positions to close for the symbol: {symbol} time of checking: {now}"
-        send_push_notification(push_notification_header, push_notification_body)
+        # push_notification_header=f"No Open Positions to close on {symbol}"
+        # push_notification_body=f"No open positions to close for the symbol: {symbol} time of checking: {now}"
+        # send_push_notification(push_notification_header, push_notification_body)
         return total_closed_positions
 
 def close_open_order(ticket_number):
@@ -307,15 +307,15 @@ def close_all_open_orders(symbol):
             close_open_order(order.ticket)
             total_closed_orders += 1
         print(f"All open orders are closed on the symbol: {symbol} time of closing: {now}")
-        push_notification_header=f"All open orders closed on {symbol}"
-        push_notification_body=f"All open orders are closed on the symbol: {symbol} time of closing: {now}"
-        send_push_notification(push_notification_header, push_notification_body)
+        # push_notification_header=f"All open orders closed on {symbol}"
+        # push_notification_body=f"All open orders are closed on the symbol: {symbol} time of closing: {now}"
+        # send_push_notification(push_notification_header, push_notification_body)
         return total_closed_orders
     else:
         print(f"No open orders to close for the symbol: {symbol} time of checking: {now}")
-        push_notification_header=f"No Open Orders to close on {symbol}"
-        push_notification_body=f"No open orders to close for the symbol: {symbol} time of checking: {now}"
-        send_push_notification(push_notification_header, push_notification_body)
+        # push_notification_header=f"No Open Orders to close on {symbol}"
+        # push_notification_body=f"No open orders to close for the symbol: {symbol} time of checking: {now}"
+        # send_push_notification(push_notification_header, push_notification_body)
         return total_closed_orders
         
 def manage_pending_orders_depends_on_pivots(symbol, recent_pivot_high, recent_pivot_low):
