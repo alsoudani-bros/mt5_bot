@@ -18,6 +18,7 @@ def check_market_callback():
                 time_frame="5min",
                 risk_percent=0.1,
                 risk_reward_ratio=7,
+                max_gap_size=100,
                 start_trading_hour=6,
                 start_trading_minute=0,
                 end_trading_hour=9,
