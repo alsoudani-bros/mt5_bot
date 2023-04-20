@@ -20,7 +20,12 @@ def check_market(time_frame, risk_percent, risk_reward_ratio,start_trading_hour,
         
     if not handlers.is_weekend_break():
         trading_time = handlers.The_time_of(start_trading_hour,start_trading_minute,end_trading_hour,end_trading_minute, "Trading time")
+        end_of_close_positions_hour = end_trading_hour + 1
+        close_positions_time= handlers.The_time_of(end_trading_hour,end_trading_minute,end_of_close_positions_hour,end_trading_minute, "Close positions time")
         
+        if close_positions_time:
+            handlers.close_all_open_positions(symbol)
+            
         if handlers.get_report(last_report_time, 60):
             last_report_time = datetime.datetime.now()
                 
@@ -68,6 +73,4 @@ def check_market(time_frame, risk_percent, risk_reward_ratio,start_trading_hour,
                             
                 else:
                     print("No conditions met and No position taken")
-        else:
-            handlers.close_all_open_positions(symbol)
         
