@@ -51,7 +51,7 @@ def check_market(time_frame, risk_percent, risk_reward_ratio,max_gap_size,start_
             last_candle_close = last_candle['close'][0]
             last_candle_high = last_candle['high'][0]
             last_candle_low = last_candle['low'][0]
-            gap_size = recent_pivot_high - recent_pivot_low
+            gap_size = fast_recent_pivot_high - fast_recent_pivot_low
             
             print(f"\n\n Report.............................. \n\n last candle open: {last_candle_open}\n last candle close: {last_candle_close}\n last candle high: {last_candle_high}\n last candle low: {last_candle_low} \n recent pivot high: {recent_pivot_high}\n recent pivot low: {recent_pivot_low}\n fast recent pivot high: {fast_recent_pivot_high}\n fast recent pivot low: {fast_recent_pivot_low}\n last long position pivot high: {last_long_position_pivot_high}\n last short position pivot low: {last_short_position_pivot_low}\n\n End of Report..............................\n\n")
             
